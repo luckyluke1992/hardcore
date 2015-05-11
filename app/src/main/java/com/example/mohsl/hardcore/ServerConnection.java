@@ -199,7 +199,8 @@ public class ServerConnection {
                 urlConnection.setRequestMethod("GET");
 
                 //TODO: int responseCode = urlConnection.getResponseCode();
-
+                Toast toast = Toast.makeText(MainActivity.getAppContext(),urlConnection.getResponseMessage().toString(), Toast.LENGTH_LONG);
+                toast.show();
                 BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String inputLine;
 
@@ -220,12 +221,46 @@ public class ServerConnection {
         JSONObject obj = null;
         try {
             obj = new JSONObject(res.toString());
-            Log.i(TAG,res.toString());
+            Log.i(TAG, res.toString());
             key = keyHandler.getKeyFromSerialization(obj.getString("publickey"));
             Log.i(TAG, obj.getString("publickey"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return key;
+    }
+
+    public boolean checkIfContactExists(String name) {
+        StringBuffer res = new StringBuffer();
+        URL url = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            url = new URL("http://luckyluke.selfhost.bz:1337/users/get/" + name);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            if (urlConnection != null) {
+                urlConnection.setReadTimeout(1000);
+                urlConnection.setConnectTimeout(1500);
+                urlConnection.setRequestMethod("GET");
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    res.append(inputLine);
+                }
+                in.close();
+                urlConnection.disconnect();
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+           return false;
+        }
+        JSONObject obj = null;
+        try {
+            obj = new JSONObject(res.toString());
+            Log.i(TAG, res.toString());
+            return obj.has("publickey");
+        } catch (JSONException e) {
+            return false;
+        }
     }
 }

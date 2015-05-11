@@ -1,5 +1,6 @@
 package com.example.mohsl.hardcore;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -18,8 +19,11 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -284,29 +288,67 @@ public class MainActivity extends Activity {
         }
         else if(id==R.id.action_new_message)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Input a friends name");
+            currentDialog =  new MaterialDialog.Builder(this)
+                    .title("Input a friends name")
+                    .content(R.string.dialog_add_friend_content)
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .positiveText(R.string.search)
+                    .autoDismiss(false)
+                    .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog dialog, CharSequence input) {
+                            // Do something
+                            if (serverConnection.checkIfContactExists(input.toString())) {
+                                confirmContact(input.toString());
+                                dialog.dismiss();
+                            } else {
+                                dialog.setContent("EY MAN SCHREIB MA RICHTIG");
+                            }
+                        }
+                    }).show();
 
+            /*final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Input a friends name");
+            dialog.setCancelable(true);
+
+            final Context myActivity = this;
             // Set up the input
             final EditText input = new EditText(this);
             // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            input.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
 
-                    Contact newContact = new Contact(input.getText().toString(), false, serverConnection.requestPubKey(input.getText().toString()));
-                    Log.i(TAG, newContact.toString());
-                    datasource.storeContact(newContact);
-                    Toast toast = Toast.makeText(context,"Not implemented, maybe Manus Task",Toast.LENGTH_SHORT);
-                    toast.show();
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (serverConnection.checkIfContactExists(input.getText().toString())) {
+                        Log.i(TAG, "contact exists");
+                        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Contact newContact = new Contact(input.getText().toString(), false, serverConnection.requestPubKey(input.getText().toString()));
+                                Log.i(TAG, newContact.toString());
+                                datasource.storeContact(newContact);
+                            }
+                        });
+                        //dialog.setView(input);
+                        dialog.show();
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
                 }
             });
-
-            builder.show();
+            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+            dialog.setView(input);
+            dialog.show();*/
         }
         else if(id==R.id.action_search)
         {
@@ -315,6 +357,28 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public MaterialDialog currentDialog;
+
+    public void confirmContact(String contact) {
+        if(currentDialog != null)
+        {
+            currentDialog.dismiss();
+            currentDialog = null;
+        }
+
+        currentDialog = new MaterialDialog.Builder(this)
+                .title(R.string.dialog_add_friend_conirm_dialog)
+                .content(contact.toString() + " hinzufügen?")
+                .positiveText(R.string.yes)
+                .negativeText(R.string.no)
+                .callback(new MaterialDialog.ButtonCallback() {
+                    @Override
+                    public void onPositive(MaterialDialog dialog) {
+                    }
+                })
+                .show();
     }
 
     public static void fillBox(String debug) {
