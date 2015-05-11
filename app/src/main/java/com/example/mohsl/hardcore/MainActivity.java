@@ -370,7 +370,7 @@ public class MainActivity extends Activity {
 
         currentDialog = new MaterialDialog.Builder(this)
                 .title(R.string.dialog_add_friend_conirm_dialog)
-                .content(contact.toString() + " hinzufügen?")
+                .content("Add " + contact.toString() + "?")
                 .positiveText(R.string.yes)
                 .negativeText(R.string.no)
                 .callback(new MaterialDialog.ButtonCallback() {
