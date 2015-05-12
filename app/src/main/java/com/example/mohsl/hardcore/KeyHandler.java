@@ -45,9 +45,6 @@ public class KeyHandler {
     private static KeyHandler instance;
     private Key pubKey;
     private Key privKey;
-    private Key sKey;
-    //private IvParameterSpec sIvSpec;
-    private byte[] keyBlock;
 
     public static KeyHandler getInstance() {
         if (instance == null) {
@@ -167,6 +164,17 @@ public class KeyHandler {
         return new String(encodedBytes);
     }
 
+    public String getEncodedFromKeyBlock(byte[] keyBlock) {
+        byte[] encodedBytes;
+        encodedBytes = Base64.encode(keyBlock);
+        return new String(encodedBytes);
+    }
+
+    public byte[] getKeyBlockfromEncoded(String encodedKeyBlock){
+        byte[] decodedBytes = Base64.decode(encodedKeyBlock);
+        return decodedBytes;
+    }
+
     public Key getKeyFromSerialization(String encodedKey) {
         Object obj = null;
         byte[] decodedBytes = Base64.decode(encodedKey);
@@ -198,10 +206,9 @@ public class KeyHandler {
             assert (obj instanceof KeyPair);
             ois.close();
             fis.close();
-            Log.i("Hardcore input key from file", ((KeyPair) obj).getPrivate().toString());
+            Log.i("Hardcore", ((KeyPair) obj).getPrivate().toString());
             setPubKey(((KeyPair) obj).getPublic());
             setPrivKey(((KeyPair) obj).getPrivate());
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -210,16 +217,20 @@ public class KeyHandler {
     }
 
 
-    public String encryptMessage(String messageText, Key publicKey) {
+    public String[] encryptMessage(String messageText, Key publicKey) {
+        String[] returnValue = new String[2];
+        //0--> encoded message
+        //1-->keyblock
+        byte[] keyBlock=null;
         SecureRandom     random = Utils.createFixedRandom();
         byte[] cipherText=null;
         // create the symmetric key and iv
         try {
-            sKey = Utils.createKeyForAES(256, random);
+            Key sKey = Utils.createKeyForAES(256, random);
             IvParameterSpec sIvSpec = Utils.createCtrIvForAES(0, random);
             // symmetric key/iv wrapping step
             Cipher           xCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "BC");
-            xCipher.init(Cipher.ENCRYPT_MODE, pubKey, random);
+            xCipher.init(Cipher.ENCRYPT_MODE, publicKey, random);
             keyBlock = xCipher.doFinal(packKeyAndIv(sKey, sIvSpec));
 
             // encryption step
@@ -244,10 +255,13 @@ public class KeyHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new String(Base64.encode(cipherText));
+        returnValue[0]=new String(Base64.encode(cipherText));
+        returnValue[1]=getEncodedFromKeyBlock(keyBlock);
+
+        return returnValue;
     }
 
-    public String decryptMessage(String messageText){
+    public String decryptMessage(String messageText, byte[] keyBlock){
         Cipher xCipher = null;
         byte[] plainText = null;
         try {
@@ -262,7 +276,7 @@ public class KeyHandler {
 
             byte[] decodedBytes = Base64.decode(messageText);
             plainText = sCipher.doFinal(decodedBytes);
-            Log.i("Hardcore, Base64 decoded:", plainText.toString());
+            Log.i("Hardcore", plainText.toString());
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

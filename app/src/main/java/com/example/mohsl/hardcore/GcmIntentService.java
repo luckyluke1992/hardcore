@@ -37,7 +37,6 @@ public class GcmIntentService extends IntentService {
     public GcmIntentService() {
         super("GcmIntentService");
     }
-    public static final String TAG = "Hardcore";
     private HardcoreDataSource datasource;
     private KeyHandler keyHandler;
 
@@ -45,7 +44,7 @@ public class GcmIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Bundle extras = intent.getExtras();
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-        Log.i(TAG,"GCM intent released");
+        Log.i(getString(R.string.debug_tag),"GCM intent released");
         // The getMessageType() intent parameter must be the intent you received
         // in your BroadcastReceiver.
         String messageType = gcm.getMessageType(intent);
@@ -64,7 +63,7 @@ public class GcmIntentService extends IntentService {
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
                 // Post notification of received message.
 
-                Log.i(TAG, "Received: " + extras.toString());
+                Log.i(getString(R.string.debug_tag), "Received: " + extras.toString());
 
                 sendNotification(extras);
             }
@@ -105,18 +104,20 @@ public class GcmIntentService extends IntentService {
 */
         // nice parsing
 
-        String content =  data.getString("content");
-        String sender =  data.getString("sender");
+        String content =  data.getString(getString(R.string.message_content));
+        String sender =  data.getString(getString(R.string.message_sender));
+        String keyBlock = data.getString(getString(R.string.message_keyblock));
 
-        messageMap.put("sender", sender);
-        messageMap.put("content", content);
+        messageMap.put(getString(R.string.message_sender), sender);
+        messageMap.put(getString(R.string.message_content), content);
+        messageMap.put(getString(R.string.message_keyblock), keyBlock);
 
         keyHandler=KeyHandler.getInstance();
         //decrypt Message
-        Log.i(TAG,messageMap.toString());
-        String encryptedMessage = keyHandler.decryptMessage(messageMap.get("content"));
-        Log.i(TAG,encryptedMessage);
-        messageMap.put("content", encryptedMessage);
+        Log.i(getString(R.string.debug_tag),messageMap.toString());
+        String encryptedMessage = keyHandler.decryptMessage(messageMap.get(getString(R.string.message_content)), keyHandler.getKeyBlockfromEncoded(messageMap.get(getString(R.string.message_keyblock))));
+        Log.i(getString(R.string.debug_tag),encryptedMessage);
+        messageMap.put(getString(R.string.message_content), encryptedMessage);
 
 
         long[] pattern= {0,500,0};
@@ -125,8 +126,8 @@ public class GcmIntentService extends IntentService {
                         .setSmallIcon(R.drawable.ic_launcher) //originally: R.drawable.ic_stat_gcm
                         .setContentTitle("Hardcore Message")
                         .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText(messageMap.get("sender") + ": " + messageMap.get("content")))
-                        .setContentText(messageMap.get("sender") + ": " + messageMap.get("content"))
+                                .bigText(messageMap.get(getString(R.string.message_sender)) + ": " + messageMap.get(getString(R.string.message_content))))
+                        .setContentText(messageMap.get(getString(R.string.message_sender)) + ": " + messageMap.get(getString(R.string.message_content)))
                         .setVisibility(android.app.Notification.VISIBILITY_PRIVATE)
                         .setVibrate(pattern)
                         .setLights(Color.MAGENTA,500,500);
@@ -137,21 +138,21 @@ public class GcmIntentService extends IntentService {
 
         int senderId=0;
         int receiverId=0;
-        senderId = datasource.getContactId(messageMap.get("sender"));
+        senderId = datasource.getContactId(messageMap.get(getString(R.string.message_sender)));
         receiverId = datasource.getContactId(MainActivity.getUserName());
-        datasource.storeMessage(senderId,receiverId, messageMap.get("content"));
+        datasource.storeMessage(senderId,receiverId, messageMap.get(getString(R.string.message_content)));
         datasource.setUnreadMessage(senderId);
 
         //send intent to mainActivity for refresh purpose:
-        Intent intentToMain = new Intent("refreshMainView");
+        Intent intentToMain = new Intent(getString(R.string.intent_refresh_main_view));
         // You can also include some extra data.
         //intentToMain.putExtra("message", "This is my message!");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intentToMain);
 
         //send intent to MessageViewActivity for refresh purpose:
-        Intent intentToMessageView = new Intent("refreshMessageView");
+        Intent intentToMessageView = new Intent(getString(R.string.intent_refresh_message_view));
         // You can also include some extra data.
-        intentToMessageView.putExtra("message", messageMap.get("sender"));
+        intentToMessageView.putExtra("message", messageMap.get(getString(R.string.message_sender)));
         LocalBroadcastManager.getInstance(this).sendBroadcast(intentToMessageView);
     }
 }

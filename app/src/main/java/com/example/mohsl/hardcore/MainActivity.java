@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
 
         if(firstRun) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Input a username");
+            builder.setTitle(getString(R.string.input_instruction_for_a_friends_username));
 
             // Set up the input
             final EditText input = new EditText(this);
@@ -112,8 +112,8 @@ public class MainActivity extends Activity {
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    PreferenceManager.getDefaultSharedPreferences(context).edit().putString("USERNAME", input.getText().toString()).commit();
-                    USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString("USERNAME",input.getText().toString());
+                    PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.getText().toString()).commit();
+                    USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),input.getText().toString());
                     USERID = datasource.getContactId(getUserName());
                     keyHandler.generateAndStoreKeys();
                     Contact contact = new Contact(USERNAME, false, keyHandler.getPubKey());
@@ -121,15 +121,37 @@ public class MainActivity extends Activity {
                     startRegistration();
                 }
             });
-
             builder.show();
+
+            //TODO: implement following Alertcode
+            /*
+            currentDialog =  new MaterialDialog.Builder(this)
+                    .title("Input a username")
+                    .content("this will be the name of your contact")
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .positiveText("check availability")
+                    .autoDismiss(false)
+                    .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog dialog, CharSequence input) {
+                            // Do something
+                            if (serverConnection.checkIfContactExists(input.toString())) {
+                                confirmContact(input.toString());
+                                dialog.dismiss();
+                            } else {
+                                dialog.setContent(getString(R.string.response_dialog_when_searched_friend_not_found));
+                            }
+                        }
+                    }).show();
+             */
+
         }
         else{
-            USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString("USERNAME","undefined");
+            USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),getString(R.string.undefined));
             USERID = datasource.getContactId(getUserName());
             keyHandler.readInKeys();
             startRegistration();
-            fillBox("Hello " + USERNAME + "!");
+            fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
         }
 
 
@@ -146,7 +168,7 @@ public class MainActivity extends Activity {
 
         //initialize intentReciever for refresh purposes
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("refreshMainView"));
+                new IntentFilter(getString(R.string.intent_refresh_main_view)));
     }/*
         ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, contacts);
         main.setOnItemClickListener(new sendMessageListener());
@@ -162,9 +184,9 @@ public class MainActivity extends Activity {
                 registerInBackground();
             }
         } else {
-            Log.i(TAG, "No valid Google Play Services APK found.");
+            Log.i(getString(R.string.debug_tag), "No valid Google Play Services APK found.");
         }
-        Log.i(TAG,"Estabblish connection and registered user");
+        Log.i(getString(R.string.debug_tag),"Estabblish connection and registered user");
         refreshView();
     }
 
@@ -172,7 +194,7 @@ public class MainActivity extends Activity {
         final SharedPreferences prefs = getGcmPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
         if (registrationId.isEmpty()) {
-            Log.i(TAG, "Registration not found.");
+            Log.i(getString(R.string.debug_tag), "Registration not found.");
             return "";
         }
         // Check if app was updated; if so, it must clear the registration ID
@@ -184,7 +206,7 @@ public class MainActivity extends Activity {
             Log.i(TAG, "App version changed.");
             return "";
         }
-        Log.i(TAG, "RegistrationId found: " + registrationId);
+        Log.i(getString(R.string.debug_tag), "RegistrationId found: " + registrationId);
         return registrationId;
     }
 
@@ -257,7 +279,7 @@ public class MainActivity extends Activity {
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGcmPreferences(context);
         int appVersion = getAppVersion(context);
-        Log.i(TAG, "Saving regId on app version " + appVersion);
+        Log.i(getString(R.string.debug_tag), "Saving regId on app version " + appVersion);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PROPERTY_REG_ID, regId);
         editor.putInt(PROPERTY_APP_VERSION, appVersion);
@@ -289,7 +311,7 @@ public class MainActivity extends Activity {
         else if(id==R.id.action_new_message)
         {
             currentDialog =  new MaterialDialog.Builder(this)
-                    .title("Input a friends name")
+                    .title(getString(R.string.instruction_message_to_input_name_to_search))
                     .content(R.string.dialog_add_friend_content)
                     .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
                     .positiveText(R.string.search)
@@ -302,7 +324,7 @@ public class MainActivity extends Activity {
                                 confirmContact(input.toString());
                                 dialog.dismiss();
                             } else {
-                                dialog.setContent("EY MAN SCHREIB MA RICHTIG");
+                                dialog.setContent(getString(R.string.response_dialog_when_searched_friend_not_found));
                             }
                         }
                     }).show();
@@ -352,7 +374,7 @@ public class MainActivity extends Activity {
         }
         else if(id==R.id.action_search)
         {
-            Toast toast = Toast.makeText(context,"Not implemented, maybe Manus Task",Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context,getString(R.string.not_implemented),Toast.LENGTH_SHORT);
             toast.show();
         }
 
@@ -361,7 +383,8 @@ public class MainActivity extends Activity {
 
     public MaterialDialog currentDialog;
 
-    public void confirmContact(String contact) {
+    public void confirmContact(String mContact) {
+        final String contact = mContact;
         if(currentDialog != null)
         {
             currentDialog.dismiss();
@@ -376,6 +399,10 @@ public class MainActivity extends Activity {
                 .callback(new MaterialDialog.ButtonCallback() {
                     @Override
                     public void onPositive(MaterialDialog dialog) {
+                        Contact newContact = new Contact(contact, false, serverConnection.requestPubKey(contact));
+                        Log.i(TAG, newContact.toString());
+                        datasource.storeContact(newContact);
+                        refreshView();
                     }
                 })
                 .show();
@@ -393,7 +420,7 @@ public class MainActivity extends Activity {
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
-                Log.i(TAG, "This device is not supported.");
+                Log.i(getString(R.string.debug_tag), "This device is not supported.");
                 finish();
             }
             return false;

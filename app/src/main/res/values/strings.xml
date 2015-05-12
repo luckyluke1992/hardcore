@@ -9,8 +9,21 @@
     <string name="dialog_add_friend_input_hint">Your friends name</string>
     <string name="empty" />
     <string name="search">Search</string>
-    <string name="dialog_add_friend_conirm_dialog">Add?</string>
+    <string name="dialog_add_friend_conirm_dialog">Add contact?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="welcome_hello_message">"Hello "</string>
+    <string name="response_dialog_when_searched_friend_not_found">Couldn´t find, try again!</string>
+    <string name="not_implemented">Not implemented</string>
+    <string name="instruction_message_to_input_name_to_search">Input a friends name</string>
+    <string name="input_instruction_for_a_friends_username">Input a username</string>
+    <string name="message_content">content</string>
+    <string name="message_sender">sender</string>
+    <string name="intent_refresh_message_view">refreshMessageView</string>
+    <string name="intent_refresh_main_view">refreshMainView</string>
+    <string name="debug_tag">Hardcore</string>
+    <string name="undefined">undefined</string>
+    <string name="shared_prefs_username">USERNAME</string>
+    <string name="message_keyblock">keyblock</string>
 
 </resources>

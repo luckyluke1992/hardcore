@@ -150,7 +150,7 @@ public class DisplayMessageActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             String message = intent.getStringExtra("message");
-            Log.d("receiver", "Got message: " + message);
+            Log.i(getString(R.string.debug_tag),"message:" + message);
             if(message.equals(contactName) && isActive){
                 NotificationManager notifManager= (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 notifManager.cancelAll();

@@ -127,7 +127,7 @@ public class ServerConnection {
                 jsonObj.put("regid", regId);
                 jsonObj.put("publickey", keyHandler.getSerializationFromKey(keyHandler.getPubKey()));
                 jsonObj.put("keytimestamp", "notImplementedYet");
-                Log.i(TAG + "registration message json:",jsonObj.toString());
+                Log.i("Hardcore",jsonObj.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -158,13 +158,14 @@ public class ServerConnection {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost("http://luckyluke.selfhost.bz:1337/messages/send");
 
-
+         String[] encryption = keyHandler.encryptMessage(message, datasource.getContact(receiverId).getPubKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {
-                jsonObj.put("content", keyHandler.encryptMessage(message, datasource.getContact(receiverId).getPubKey())); //encrypted message
+                jsonObj.put("content", encryption[0]); //encrypted message
                 jsonObj.put("receiver", receiverName);
                 jsonObj.put("sender", MainActivity.getUserName());
+                jsonObj.put("keyblock", encryption[1]);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
