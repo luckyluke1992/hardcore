@@ -12,7 +12,9 @@
         android:layout_height="match_parent"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"
-        android:layout_marginBottom="48dip">
+        android:layout_marginBottom="48dip"
+        android:divider="@null"
+        android:dividerHeight="0dp">
     </ListView>
 
     <LinearLayout
