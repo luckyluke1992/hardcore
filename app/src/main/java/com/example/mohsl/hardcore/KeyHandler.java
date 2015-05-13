@@ -23,12 +23,15 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -138,10 +141,11 @@ public class KeyHandler {
 
     public Key getPrivKey() {
         return privKey;
-    }
+    } // shouldn´t be used
 
     //use this function to serialize a key to encoded String, which can be used to send to servr or store in db
     public String getSerializationFromKey(Key key) {
+        /*
         byte[] res = null;
         byte[] encodedBytes = null;
         try {
@@ -150,7 +154,7 @@ public class KeyHandler {
             //Mikes idea to make code cleaner
             //Class<?> c = Key.class;
             //c.getField("publicKey");
-            //Key newKey = (PublicKey)PublicKeyFactory.createKey(pubKey.getEncoded());
+
             o = new ObjectOutputStream(b);
             o.writeObject(key);
             res = b.toByteArray();
@@ -162,6 +166,15 @@ public class KeyHandler {
             e.printStackTrace();
         }
         return new String(encodedBytes);
+        */
+        //TODO: Check alternative
+        // Send the public key bytes to the other party...
+        byte[] publicKeyBytes = key.getEncoded();
+
+        //Convert Public key to String
+        String pubKeyStr = new String(Base64.encode(publicKeyBytes));
+
+        return pubKeyStr;
     }
 
     public String getEncodedFromKeyBlock(byte[] keyBlock) {
@@ -177,10 +190,34 @@ public class KeyHandler {
 
     public Key getKeyFromSerialization(String encodedKey) {
         Object obj = null;
+        byte[] encodedBytes =null;
         byte[] decodedBytes = Base64.decode(encodedKey);
         ByteArrayInputStream bi = new ByteArrayInputStream(decodedBytes);
         ObjectInputStream oi = null;
-        try {
+        Key pubKey2 = null;
+
+        //try {
+            /* TODO: Change encoding
+            encodedBytes = pubKey.getEncoded();
+            Key newKey = (PublicKey)PublicKeyFactory.createKey(pubKey.getEncoded());
+            Log.i(String.valueOf(R.string.debug_tag), newKey.toString());
+            */
+
+            //TODO: Check next try
+            try {
+                //encodedBytes = Base64.encode(pubKey.getEncoded());
+                X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(decodedBytes);
+                KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+                pubKey2 = keyFact.generatePublic(x509KeySpec);
+                Log.i(String.valueOf(R.string.debug_tag), pubKey2.toString());
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchProviderException e) {
+                e.printStackTrace();
+            }
+            /*
             oi = new ObjectInputStream(bi);
             obj = oi.readObject();
             assert (obj instanceof Key);
@@ -190,8 +227,8 @@ public class KeyHandler {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        return (Key) obj;
+        }*/
+        return pubKey2;
     }
 
     private void setPrivKey(Key privKey) {
