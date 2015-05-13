@@ -27,6 +27,7 @@ public class ServerConnection {
     private static ServerConnection instance;
     private HardcoreDataSource datasource;
     private KeyHandler keyHandler;
+    private AdressBook adressBook;
     public static final String TAG = "Hardcore";
 
     public static ServerConnection getInstance()
@@ -39,8 +40,9 @@ public class ServerConnection {
     }
 
     public ServerConnection() {
-        datasource = HardcoreDataSource.getInstance(null);
+        datasource = HardcoreDataSource.getInstance(MainActivity.getAppContext());
         keyHandler = KeyHandler.getInstance();
+        adressBook = AdressBook.getInstance();
     }
 
     public void pull() //Shouldn´t be used anymore
@@ -85,8 +87,8 @@ public class ServerConnection {
             for(int i=0; i<reader.length();i++) {
                 messageObject = reader.getJSONObject(i);
                 //MainActivity.fillBox(messageObject.toString()); // because debug in android is cancer
-                senderId = datasource.getContactId(messageObject.getString("sender"));
-                receiverId = datasource.getContactId(messageObject.getString("receiver"));
+                senderId = adressBook.getContactId(messageObject.getString("sender"));
+                receiverId = adressBook.getContactId(messageObject.getString("receiver"));
                 message = messageObject.getString("content");
                 datasource.storeMessage(senderId,receiverId, message);
             }
@@ -133,14 +135,13 @@ public class ServerConnection {
             // TODO Auto-generated catch block
         }
     }
-    public void pushMessage(int receiverId, String message)
+    public void pushMessage(String receiverName, String message)
     {
-        String receiverName = datasource.getContactName(receiverId);
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost("http://luckyluke.selfhost.bz:1337/messages/send");
 
-         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, datasource.getContact(receiverId).getPubKey());
+         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, adressBook.getContact(receiverName).getPubKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {

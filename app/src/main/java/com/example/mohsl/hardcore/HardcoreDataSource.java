@@ -31,14 +31,12 @@ public class HardcoreDataSource {
         }
         return instance;
     }
-    private HardcoreDataSource(Context context) {
+    public HardcoreDataSource(Context context) {
         dbHelper = new MySQLiteHelper(context);
-    }
-
-    public void open() throws SQLException {
         database = dbHelper.getWritableDatabase();
         dbHelper.onUpgrade(database,1,1);
     }
+
 
     public List<Integer> getAllContacts() {
         List<Integer> contacts = new ArrayList<Integer>();
@@ -56,7 +54,7 @@ public class HardcoreDataSource {
         return contacts;
     }
 
-    public List<Contact> getAllContactNamesWithMessageInfo() {
+    public List<Contact> getAllContactsFromDb() {
         List<Contact> contacts = new ArrayList<Contact>();
 
         Cursor cursor = database.query(MySQLiteHelper.TABLE_CONTACTS,
@@ -64,12 +62,11 @@ public class HardcoreDataSource {
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Log.i("Hardcore", cursor.getString(0) + cursor.getString(1)+ cursor.getString(3)+ cursor.getString(2));
             //0 --> ID
             //1 --> Name
             //2 --> PUbKey
             //3 --> MessageAvailable
-            contacts.add(new Contact(cursor.getString(1), Boolean.parseBoolean(cursor.getString(3)), keyHandeler.getKeyFromSerialization(cursor.getString(2))));
+            contacts.add(new Contact(Integer.parseInt(cursor.getString(0)),cursor.getString(1), Boolean.parseBoolean(cursor.getString(3)), keyHandeler.getKeyFromSerialization(cursor.getString(2))));
             cursor.moveToNext();
         }
         // make sure to close the cursor
@@ -85,12 +82,11 @@ public class HardcoreDataSource {
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Log.i("Hardcore", cursor.getString(0) + cursor.getString(1)+ cursor.getString(3)+ cursor.getString(2));
             //0 --> ID
             //1 --> Name
             //2 --> PUbKey
             //3 --> MessageAvailable
-            contact = new Contact(cursor.getString(1), Boolean.parseBoolean(cursor.getString(3)), keyHandeler.getKeyFromSerialization(cursor.getString(2)));
+            contact = new Contact(Integer.parseInt(cursor.getString(0)),cursor.getString(1), Boolean.parseBoolean(cursor.getString(3)), keyHandeler.getKeyFromSerialization(cursor.getString(2)));
             cursor.moveToNext();
         }
         // make sure to close the cursor
@@ -98,6 +94,7 @@ public class HardcoreDataSource {
         return contact;
     }
 
+    /*
     public List<String> getAllContactNames() {
         List<String> contacts = new ArrayList<String>();
 
@@ -112,7 +109,7 @@ public class HardcoreDataSource {
         // make sure to close the cursor
         cursor.close();
         return contacts;
-    }
+    }*/
 
     public List<Message> getConversationHistory(int contactId) {
         List<Message> messages = new ArrayList<Message>();
@@ -141,13 +138,13 @@ public class HardcoreDataSource {
         database.execSQL(Insert_Data);
     }
 
-    public void setUnreadMessage(int senderId){
+    public void storeUnreadMessageInDb(String sendername){
         final String Insert_Data="UPDATE " + MySQLiteHelper.TABLE_CONTACTS +
                 " SET " + MySQLiteHelper.COLUMN_UNREAD_MESSAGE +"='true' WHERE " +
-                MySQLiteHelper.COLUMN_CONTACT_ID + "=" + senderId;
+                MySQLiteHelper.COLUMN_CONTACT + "= '" + sendername +"'";
         database.execSQL(Insert_Data);
     }
-
+/*
     public boolean getUnreadMessageAvailable(int contactId){
         boolean available = false;
 
@@ -162,12 +159,12 @@ public class HardcoreDataSource {
         // make sure to close the cursor
         cursor.close();
         return available;
-    }
+    }*/
 
-    public void setReadMessage(int senderId){
+    public void storeReadMessageInDb(String sendername){
         final String Insert_Data="UPDATE " + MySQLiteHelper.TABLE_CONTACTS +
                 " SET " + MySQLiteHelper.COLUMN_UNREAD_MESSAGE +"='false' WHERE " +
-                MySQLiteHelper.COLUMN_CONTACT_ID + "=" + senderId;
+                MySQLiteHelper.COLUMN_CONTACT + "= '" + sendername + "'";
         database.execSQL(Insert_Data);
     }
 

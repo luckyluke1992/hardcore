@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.List;
@@ -33,27 +34,28 @@ public class MessageViewListAdapter extends ArrayAdapter<String> {
 
     public View getView(int position,View view,ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.message_list_item, null,true);
+        View rowView=inflater.inflate(R.layout.message_list_item, null, true);
 
 
-        TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
+        TextView messageTextField = (TextView) rowView.findViewById(R.id.item);
         //ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
         //TextView extratxt = (TextView) rowView.findViewById(R.id.textView1);
 
         if((messages.get(position)).getSenderId() == MainActivity.getUserId()) {
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) txtTitle.getLayoutParams();
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageTextField.getLayoutParams();
             params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            txtTitle.setLayoutParams(params);
+            messageTextField.setLayoutParams(params);
         }
         else{
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) txtTitle.getLayoutParams();
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageTextField.getLayoutParams();
             params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            txtTitle.setLayoutParams(params);
+            messageTextField.setTextColor(R.color.green); //TODO: Fix color issue
+            messageTextField.setLayoutParams(params);
         }
 
-        txtTitle.setText(itemname.get(position));
+        messageTextField.setText(itemname.get(position));
         //imageView.setImageResource(R.drawable.powered_by_google_light);
         //extratxt.setText("Description "+itemname[position]);
         return rowView;

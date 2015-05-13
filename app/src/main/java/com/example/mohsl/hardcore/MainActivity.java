@@ -5,10 +5,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -19,16 +17,12 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,9 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MainActivity extends Activity {
 
     public final static String EXTRA_MESSAGE = "com.example.hardcore.MESSAGE";
-    private HardcoreDataSource datasource;
+
     private KeyHandler keyHandler;
     private ServerConnection serverConnection;
+    private AdressBook adressBook;
     public static final String PROPERTY_REG_ID = "registration_id";
     public static String PREFERENCE_FIRST_RUN ="first-run";
     private static final String PROPERTY_APP_VERSION = "appVersion";
@@ -52,7 +47,6 @@ public class MainActivity extends Activity {
     private static int USERID = 0;
     String SENDER_ID = "759857875885";
     String regid;
-    static final String TAG = "Hardcore";
     GoogleCloudMessaging gcm;
     AtomicInteger msgId = new AtomicInteger();
     SharedPreferences prefs;
@@ -65,37 +59,45 @@ public class MainActivity extends Activity {
         return USERID;
     }
 
-    private static TextView bugBox;
+    private static TextView messageBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //dirty context fix
+        MainActivity.context = getApplicationContext();
+        context = getApplicationContext();
 
         //Quick n Dirty
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
         //Clean graphic initialization
-        context = getApplicationContext();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        bugBox = (TextView) findViewById(R.id.textView1);
+
+        messageBox = (TextView) findViewById(R.id.textView1);
+
+        //connect adressbook
+        adressBook = AdressBook.getInstance(); //no getinstance call
+
 
         //conntec to db and establish network connection
-        datasource = HardcoreDataSource.getInstance(this);
-        datasource.open();
         serverConnection = ServerConnection.getInstance();
 
         //connect to Keyhandler
         keyHandler = KeyHandler.getInstance();
 
+
+
         //Check wheter first execution:
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         boolean firstRun = p.getBoolean(PREFERENCE_FIRST_RUN, true);
         p.edit().putBoolean(PREFERENCE_FIRST_RUN, false).commit();
-         // bit crappy, since prefs are accessed twice :S
+         //TODO: bit crappy, since prefs are accessed twice :S
 
-        //dirty context fix
-        MainActivity.context = getApplicationContext();
+
+
 
 
         if(firstRun) {
@@ -137,11 +139,10 @@ public class MainActivity extends Activity {
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             if (!serverConnection.checkIfContactExists(input.toString())) {
                                 PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.toString()).commit();
-                                USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),input.toString());
-                                USERID = datasource.getContactId(getUserName());
+                                USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), input.toString());
+                                USERID = adressBook.getContactId(getUserName());
                                 keyHandler.generateAndStoreKeys();
-                                Contact contact = new Contact(USERNAME, false, keyHandler.getPubKey());
-                                datasource.storeContact(contact);
+                                adressBook.storeOwnContact(USERNAME);
                                 startRegistration();
                                 dialog.dismiss();
                             } else {
@@ -153,14 +154,14 @@ public class MainActivity extends Activity {
         }
         else{
             USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),getString(R.string.undefined));
-            USERID = datasource.getContactId(getUserName());
+            USERID = adressBook.getContactId(getUserName());
             keyHandler.readInKeys();
             startRegistration();
             fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
         }
         refreshView();
         /*
-        List<Contact> contacts = datasource.getAllContactNamesWithMessageInfo();
+        List<Contact> contacts = datasource.getAllContactsFromDb();
         List<String> contactnames = datasource.getAllContactNames();
 
         ListView main = (ListView) findViewById(R.id.main_layout);
@@ -204,7 +205,7 @@ public class MainActivity extends Activity {
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = getAppVersion(context);
         if (registeredVersion != currentVersion) {
-            Log.i(TAG, "App version changed.");
+            Log.i(String.valueOf(R.string.debug_tag), "App version changed.");
             return "";
         }
         Log.i(getString(R.string.debug_tag), "RegistrationId found: " + registrationId);
@@ -273,7 +274,7 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String msg) {
-               Log.i(TAG,msg);
+               Log.i(String.valueOf(R.string.debug_tag),msg);
             }
         }.execute(null, null, null);
     }
@@ -318,7 +319,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             // Do something
-                            if(datasource.getAllContactNames().contains(input.toString())){
+                            if(adressBook.isFriend(input.toString())){
                                 dialog.setContent(getString(R.string.response_dialog_if_is_already_friend));
                             }
                             else if (serverConnection.checkIfContactExists(input.toString())) {
@@ -384,8 +385,8 @@ public class MainActivity extends Activity {
 
     public MaterialDialog currentDialog;
 
-    public void confirmContact(String mContact) {
-        final String contact = mContact;
+    public void confirmContact(String mContactName) {
+        final String contactName = mContactName;
         if(currentDialog != null)
         {
             currentDialog.dismiss();
@@ -394,15 +395,13 @@ public class MainActivity extends Activity {
 
         currentDialog = new MaterialDialog.Builder(this)
                 .title(R.string.dialog_add_friend_conirm_dialog)
-                .content("Add " + contact.toString() + "?")
+                .content("Add " + contactName.toString() + "?")
                 .positiveText(R.string.yes)
                 .negativeText(R.string.no)
                 .callback(new MaterialDialog.ButtonCallback() {
                     @Override
                     public void onPositive(MaterialDialog dialog) {
-                        Contact newContact = new Contact(contact, false, serverConnection.requestPubKey(contact));
-                        Log.i(TAG, newContact.toString());
-                        datasource.storeContact(newContact);
+                        adressBook.storeNewContact(contactName.toString(), serverConnection.requestPubKey(contactName.toString()));
                         refreshView();
                     }
                 })
@@ -410,7 +409,7 @@ public class MainActivity extends Activity {
     }
 
     public static void fillBox(String debug) {
-        bugBox.setText(debug);
+        messageBox.setText(debug);
     }
 
 
@@ -447,11 +446,8 @@ public class MainActivity extends Activity {
     }
 
     private void refreshView(){
-        List<Contact> contacts = datasource.getAllContactNamesWithMessageInfo();
-        List<String> contactnames = datasource.getAllContactNames();
-
         ListView main = (ListView) findViewById(R.id.main_layout);
-        MainViewListAdapter adapter=new MainViewListAdapter(this, contactnames, contacts);
+        MainViewListAdapter adapter=new MainViewListAdapter(this, adressBook.getAllContactNames(), adressBook.getContactList());
         main.setOnItemClickListener(new sendMessageListener());
         main.setAdapter(adapter);
     }

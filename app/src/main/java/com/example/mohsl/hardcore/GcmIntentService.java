@@ -2,21 +2,16 @@ package com.example.mohsl.hardcore;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.app.Notification;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +34,8 @@ public class GcmIntentService extends IntentService {
     }
     private HardcoreDataSource datasource;
     private KeyHandler keyHandler;
+    private AdressBook adressBook;
+    private ServerConnection serverConnection;
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -76,6 +73,12 @@ public class GcmIntentService extends IntentService {
     // This is just one simple example of what you might choose to do with
     // a GCM message.
     private void sendNotification(Bundle data) {
+
+        keyHandler=KeyHandler.getInstance();
+        datasource = HardcoreDataSource.getInstance(this);
+        adressBook = AdressBook.getInstance();
+        serverConnection = ServerConnection.getInstance();
+
         mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -83,7 +86,7 @@ public class GcmIntentService extends IntentService {
                 new Intent(this, MainActivity.class), 0);
 
         //Message parsing
-        datasource = HardcoreDataSource.getInstance(this);
+
         Map<String, String> messageMap = new HashMap<>();
 
         //ugly parsing
@@ -112,7 +115,7 @@ public class GcmIntentService extends IntentService {
         messageMap.put(getString(R.string.message_content), content);
         messageMap.put(getString(R.string.message_keyblock), keyBlock);
 
-        keyHandler=KeyHandler.getInstance();
+
         //decrypt Message
         Log.i(getString(R.string.debug_tag),messageMap.toString());
         String encryptedMessage = keyHandler.decryptMessage(messageMap.get(getString(R.string.message_content)), keyHandler.getKeyBlockfromEncoded(messageMap.get(getString(R.string.message_keyblock))));
@@ -124,24 +127,26 @@ public class GcmIntentService extends IntentService {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher) //originally: R.drawable.ic_stat_gcm
-                        .setContentTitle("Hardcore Message")
+                        .setContentTitle(getString(R.string.notification_title))
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(messageMap.get(getString(R.string.message_sender)) + ": " + messageMap.get(getString(R.string.message_content))))
                         .setContentText(messageMap.get(getString(R.string.message_sender)) + ": " + messageMap.get(getString(R.string.message_content)))
-                        .setVisibility(android.app.Notification.VISIBILITY_PRIVATE)
+                        .setVisibility(Notification.VISIBILITY_PRIVATE)
                         .setVibrate(pattern)
-                        .setLights(Color.MAGENTA,500,500);
+                        .setLights(Color.MAGENTA, 500, 500);
 
 
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 
-        int senderId=0;
-        int receiverId=0;
-        senderId = datasource.getContactId(messageMap.get(getString(R.string.message_sender)));
-        receiverId = datasource.getContactId(MainActivity.getUserName());
+        if(!adressBook.isFriend(messageMap.get(getString(R.string.message_sender)))){
+            adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
+        }
+
+        int senderId = adressBook.getContactId(messageMap.get(getString(R.string.message_sender)));
+        int receiverId = adressBook.getContactId(adressBook.getMyContactName());
         datasource.storeMessage(senderId,receiverId, messageMap.get(getString(R.string.message_content)));
-        datasource.setUnreadMessage(senderId);
+        adressBook.setUnreadMessage(messageMap.get(getString(R.string.message_sender)));
 
         //send intent to mainActivity for refresh purpose:
         Intent intentToMain = new Intent(getString(R.string.intent_refresh_main_view));

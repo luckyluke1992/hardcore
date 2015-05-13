@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -16,9 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 import android.content.Intent;
 
 import java.util.ArrayList;
@@ -28,10 +24,11 @@ public class DisplayMessageActivity extends Activity {
 
     private  HardcoreDataSource datasource;
     private ServerConnection serverConnection;
+    private AdressBook adressBook;
 
     private ListView conversationHistoryView;
     private ImageButton sendButton;
-    private EditText editText1;
+    private EditText InputTextField;
     private String contactName;
     private boolean isActive=true;
 
@@ -39,7 +36,7 @@ public class DisplayMessageActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_message);
-        editText1 = (EditText) findViewById(R.id.editText1);
+        InputTextField = (EditText) findViewById(R.id.editText1);
 
         conversationHistoryView = (ListView) findViewById(R.id.conversation_history_layout);
 
@@ -47,6 +44,7 @@ public class DisplayMessageActivity extends Activity {
         Intent intent = getIntent();
         contactName = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         serverConnection = ServerConnection.getInstance();
+        adressBook = AdressBook.getInstance();
 
         setTitle(contactName);
 
@@ -60,12 +58,12 @@ public class DisplayMessageActivity extends Activity {
         sendButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (editText1.getText().length() > 0) {
-                    String message = editText1.getText().toString();
-                    datasource.storeMessage(datasource.getContactId(MainActivity.getUserName()), datasource.getContactId(contactName), message);
-                    serverConnection.pushMessage(datasource.getContactId(contactName), message);
+                if (InputTextField.getText().length() > 0) {
+                    String message = InputTextField.getText().toString();
+                    datasource.storeMessage(adressBook.getContactId(MainActivity.getUserName()), adressBook.getContactId(contactName), message);
+                    serverConnection.pushMessage(contactName, message);
                     refreshView();
-                    editText1.setText("");
+                    InputTextField.setText("");
                 }
             }
         });
@@ -106,9 +104,9 @@ public class DisplayMessageActivity extends Activity {
         //serverConnection.pull();
 
         //change the message - read - status
-        datasource.setReadMessage(datasource.getContactId(contactName));
+        adressBook.setReadMessage(contactName);
 
-        List<Message> conversationHistory = datasource.getConversationHistory(datasource.getContactId(contactName));
+        List<Message> conversationHistory = datasource.getConversationHistory(adressBook.getContactId(contactName));
         final ListView listview = (ListView) findViewById(R.id.conversation_history_layout);
         List<String> conversationList = new ArrayList<String>();
         for(int i=0; i<conversationHistory.size();i++)
