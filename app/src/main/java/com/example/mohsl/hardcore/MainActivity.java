@@ -99,6 +99,7 @@ public class MainActivity extends Activity {
 
 
         if(firstRun) {
+            /*
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(getString(R.string.input_instruction_for_a_friends_username));
 
@@ -122,28 +123,32 @@ public class MainActivity extends Activity {
                 }
             });
             builder.show();
-
+            */
             //TODO: implement following Alertcode
-            /*
+
             currentDialog =  new MaterialDialog.Builder(this)
                     .title("Input a username")
                     .content("this will be the name of your contact")
-                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL)
                     .positiveText("check availability")
                     .autoDismiss(false)
                     .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
-                            // Do something
-                            if (serverConnection.checkIfContactExists(input.toString())) {
-                                confirmContact(input.toString());
+                            if (!serverConnection.checkIfContactExists(input.toString())) {
+                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.toString()).commit();
+                                USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),input.toString());
+                                USERID = datasource.getContactId(getUserName());
+                                keyHandler.generateAndStoreKeys();
+                                Contact contact = new Contact(USERNAME, false, keyHandler.getPubKey());
+                                datasource.storeContact(contact);
+                                startRegistration();
                                 dialog.dismiss();
                             } else {
-                                dialog.setContent(getString(R.string.response_dialog_when_searched_friend_not_found));
+                                dialog.setContent(getString(R.string.registration_username_taken_message));
                             }
                         }
                     }).show();
-             */
 
         }
         else{
@@ -153,9 +158,6 @@ public class MainActivity extends Activity {
             startRegistration();
             fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
         }
-
-
-
         refreshView();
         /*
         List<Contact> contacts = datasource.getAllContactNamesWithMessageInfo();
@@ -165,7 +167,6 @@ public class MainActivity extends Activity {
         CustomListAdapter adapter=new CustomListAdapter(this, contactnames, contacts);
         main.setOnItemClickListener(new sendMessageListener());
         main.setAdapter(adapter);*/
-
         //initialize intentReciever for refresh purposes
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(getString(R.string.intent_refresh_main_view)));
@@ -253,7 +254,7 @@ public class MainActivity extends Activity {
 
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
-                    sendRegistrationIdToBackend();
+                    serverConnection.registerUser(regid);
 
                     // For this demo: we don't need to send it because the device will send
                     // upstream messages to a server that echo back the message using the
@@ -269,6 +270,7 @@ public class MainActivity extends Activity {
                 }
                 return msg;
             }
+
             @Override
             protected void onPostExecute(String msg) {
                Log.i(TAG,msg);
@@ -284,10 +286,6 @@ public class MainActivity extends Activity {
         editor.putString(PROPERTY_REG_ID, regId);
         editor.putInt(PROPERTY_APP_VERSION, appVersion);
         editor.commit();
-    }
-
-    private void sendRegistrationIdToBackend() {
-        serverConnection.registerUser(regid);
     }
 
     @Override
@@ -313,14 +311,17 @@ public class MainActivity extends Activity {
             currentDialog =  new MaterialDialog.Builder(this)
                     .title(getString(R.string.instruction_message_to_input_name_to_search))
                     .content(R.string.dialog_add_friend_content)
-                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL)
                     .positiveText(R.string.search)
                     .autoDismiss(false)
                     .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             // Do something
-                            if (serverConnection.checkIfContactExists(input.toString())) {
+                            if(datasource.getAllContactNames().contains(input.toString())){
+                                dialog.setContent(getString(R.string.response_dialog_if_is_already_friend));
+                            }
+                            else if (serverConnection.checkIfContactExists(input.toString())) {
                                 confirmContact(input.toString());
                                 dialog.dismiss();
                             } else {

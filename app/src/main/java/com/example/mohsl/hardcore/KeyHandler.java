@@ -217,7 +217,7 @@ public class KeyHandler {
     }
 
 
-    public String[] encryptMessage(String messageText, Key publicKey) {
+    public String[] getEncryptedMessageAndKeyBlock(String messageText, Key publicKey) {
         String[] returnValue = new String[2];
         //0--> encoded message
         //1-->keyblock

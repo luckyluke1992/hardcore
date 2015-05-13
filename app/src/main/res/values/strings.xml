@@ -25,5 +25,7 @@
     <string name="undefined">undefined</string>
     <string name="shared_prefs_username">USERNAME</string>
     <string name="message_keyblock">keyblock</string>
+    <string name="registration_username_taken_message">Username taken, try other!</string>
+    <string name="response_dialog_if_is_already_friend">User is already your friend</string>
 
 </resources>

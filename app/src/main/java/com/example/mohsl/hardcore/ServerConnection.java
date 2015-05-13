@@ -1,43 +1,25 @@
 package com.example.mohsl.hardcore;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.nfc.Tag;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 public class ServerConnection {
@@ -158,7 +140,7 @@ public class ServerConnection {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost("http://luckyluke.selfhost.bz:1337/messages/send");
 
-         String[] encryption = keyHandler.encryptMessage(message, datasource.getContact(receiverId).getPubKey());
+         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, datasource.getContact(receiverId).getPubKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {
