@@ -131,11 +131,13 @@ public class ServerConnection {
 
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
+            Log.i(TAG, "Couldn´t connect to Server");
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            Log.i(TAG, "Couldn´t connect to Server");
         }
     }
-    public void pushMessage(String receiverName, String message)
+    public boolean pushMessage(String receiverName, String message)
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
@@ -164,9 +166,14 @@ public class ServerConnection {
 
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
+            Log.i(TAG, "Couldn´t connect to Server");
+            return false;
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            Log.i(TAG, "Couldn´t connect to Server");
+            return false;
         }
+        return true;
     }
 
     public Key requestPubKey(String name){
@@ -214,7 +221,7 @@ public class ServerConnection {
         return key;
     }
 
-    public boolean checkIfContactExists(String name) {
+    public int checkIfContactExists(String name) {
         StringBuffer res = new StringBuffer();
         URL url = null;
         HttpURLConnection urlConnection = null;
@@ -233,18 +240,24 @@ public class ServerConnection {
                 in.close();
                 urlConnection.disconnect();
             } else {
-                return false;
+                return 2;
             }
         } catch (Exception e) {
-           return false;
+           return 2;
         }
         JSONObject obj = null;
         try {
             obj = new JSONObject(res.toString());
             Log.i(TAG, res.toString());
-            return obj.has("publickey");
+            if(obj.has("publickey")){
+                return 1;
+            }
+            else{
+                return 0;
+            }
+
         } catch (JSONException e) {
-            return false;
+            return 2;
         }
     }
 }

@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.content.Intent;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,10 +61,16 @@ public class DisplayMessageActivity extends Activity {
             public void onClick(View view) {
                 if (InputTextField.getText().length() > 0) {
                     String message = InputTextField.getText().toString();
-                    datasource.storeMessage(adressBook.getContactId(MainActivity.getUserName()), adressBook.getContactId(contactName), message);
-                    serverConnection.pushMessage(contactName, message);
-                    refreshView();
-                    InputTextField.setText("");
+                    if(serverConnection.pushMessage(contactName, message)){
+                        datasource.storeMessage(adressBook.getContactId(MainActivity.getUserName()), adressBook.getContactId(contactName), message);
+                        refreshView();
+                        InputTextField.setText("");
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(), R.string.error_message_when_no_server_connection,
+                                Toast.LENGTH_LONG).show();
+                    }
+
                 }
             }
         });

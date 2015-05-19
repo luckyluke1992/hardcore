@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MainActivity extends Activity {
 
     public final static String EXTRA_MESSAGE = "com.example.hardcore.MESSAGE";
-
     private KeyHandler keyHandler;
     private ServerConnection serverConnection;
     private AdressBook adressBook;
@@ -48,8 +47,6 @@ public class MainActivity extends Activity {
     String SENDER_ID = "759857875885";
     String regid;
     GoogleCloudMessaging gcm;
-    AtomicInteger msgId = new AtomicInteger();
-    SharedPreferences prefs;
     private static Context context;
 
     public static String getUserName() {
@@ -79,7 +76,7 @@ public class MainActivity extends Activity {
         messageBox = (TextView) findViewById(R.id.textView1);
 
         //connect adressbook
-        adressBook = AdressBook.getInstance(); //no getinstance call
+        adressBook = AdressBook.getInstance();
 
 
         //conntec to db and establish network connection
@@ -95,10 +92,6 @@ public class MainActivity extends Activity {
         boolean firstRun = p.getBoolean(PREFERENCE_FIRST_RUN, true);
         p.edit().putBoolean(PREFERENCE_FIRST_RUN, false).commit();
          //TODO: bit crappy, since prefs are accessed twice :S
-
-
-
-
 
         if(firstRun) {
             /*
@@ -129,15 +122,16 @@ public class MainActivity extends Activity {
             //TODO: implement following Alertcode
 
             currentDialog =  new MaterialDialog.Builder(this)
-                    .title("Input a username")
-                    .content("this will be the name of your contact")
+                    .title(getString(R.string.input_dialog_to_input_own_username))
+                    .content(getString(R.string.dialog_hint_when_selecting_own_username))
                     .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL)
-                    .positiveText("check availability")
+                    .positiveText(getString(R.string.dialog_select_own_username_proceed))
                     .autoDismiss(false)
                     .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
-                            if (!serverConnection.checkIfContactExists(input.toString())) {
+                            int returnCode = serverConnection.checkIfContactExists(input.toString());
+                            if (returnCode ==1 ) {
                                 PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.toString()).commit();
                                 USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), input.toString());
                                 USERID = adressBook.getContactId(getUserName());
@@ -145,19 +139,21 @@ public class MainActivity extends Activity {
                                 adressBook.storeOwnContact(USERNAME);
                                 startRegistration();
                                 dialog.dismiss();
-                            } else {
+                            } else if(returnCode == 0 ) {
                                 dialog.setContent(getString(R.string.registration_username_taken_message));
+                            }
+                            else if(returnCode == 2){
+                                dialog.setContent(getString(R.string.error_message_when_no_server_connection));
                             }
                         }
                     }).show();
 
         }
         else{
-            USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),getString(R.string.undefined));
+            USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), getString(R.string.undefined));
             USERID = adressBook.getContactId(getUserName());
             keyHandler.readInKeys();
             startRegistration();
-            fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
         }
         refreshView();
         /*
@@ -322,11 +318,14 @@ public class MainActivity extends Activity {
                             if(adressBook.isFriend(input.toString())){
                                 dialog.setContent(getString(R.string.response_dialog_if_is_already_friend));
                             }
-                            else if (serverConnection.checkIfContactExists(input.toString())) {
+                            else if (1 == serverConnection.checkIfContactExists(input.toString())) {
                                 confirmContact(input.toString());
                                 dialog.dismiss();
-                            } else {
+                            } else if (0 ==  serverConnection.checkIfContactExists(input.toString())){
                                 dialog.setContent(getString(R.string.response_dialog_when_searched_friend_not_found));
+                            }
+                            else if( 2 == serverConnection.checkIfContactExists(input.toString())){
+                                dialog.setContent(getString(R.string.error_message_when_no_server_connection));
                             }
                         }
                     }).show();
@@ -395,7 +394,7 @@ public class MainActivity extends Activity {
 
         currentDialog = new MaterialDialog.Builder(this)
                 .title(R.string.dialog_add_friend_conirm_dialog)
-                .content("Add " + contactName.toString() + "?")
+                .content(getString(R.string.dialog_add_friend_verification_message) + contactName.toString() + "?")
                 .positiveText(R.string.yes)
                 .negativeText(R.string.no)
                 .callback(new MaterialDialog.ButtonCallback() {
@@ -450,6 +449,7 @@ public class MainActivity extends Activity {
         MainViewListAdapter adapter=new MainViewListAdapter(this, adressBook.getAllContactNames(), adressBook.getContactList());
         main.setOnItemClickListener(new sendMessageListener());
         main.setAdapter(adapter);
+        fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
     }
 
     public static Context getAppContext() {

@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ArrayAdapter;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class MainViewListAdapter extends ArrayAdapter<String> {
     //private final List<Integer> imgid; //not impleemnted yet
 
     public MainViewListAdapter(Activity context, List<String> itemname, List<Contact> mContacts) {
-        super(context, R.layout.mylist, itemname);
+        super(context, R.layout.contact_list, itemname);
         // TODO Auto-generated constructor stub
 
         this.context=context;
@@ -34,7 +33,7 @@ public class MainViewListAdapter extends ArrayAdapter<String> {
 
     public View getView(int position,View view,ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.mylist, null,true);
+        View rowView=inflater.inflate(R.layout.contact_list, null,true);
 
         if((contacts.get(position)).isUnreadMessageAvailable() ) {
             rowView.setBackgroundColor(Color.RED);

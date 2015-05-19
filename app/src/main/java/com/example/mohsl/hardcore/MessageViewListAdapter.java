@@ -1,13 +1,11 @@
 package com.example.mohsl.hardcore;
 
 import android.app.Activity;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.List;
@@ -23,7 +21,7 @@ public class MessageViewListAdapter extends ArrayAdapter<String> {
     //private final List<Integer> imgid; //not impleemnted yet
 
     public MessageViewListAdapter(Activity context, List<String> itemname, List<Message> mMessages) {
-        super(context, R.layout.mylist, itemname);
+        super(context, R.layout.contact_list, itemname);
         // TODO Auto-generated constructor stub
 
         this.context=context;

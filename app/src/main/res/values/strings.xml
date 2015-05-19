@@ -28,5 +28,10 @@
     <string name="registration_username_taken_message">Username taken, try other!</string>
     <string name="response_dialog_if_is_already_friend">User is already your friend</string>
     <string name="notification_title">Hardcore Message</string>
+    <string name="input_dialog_to_input_own_username">Input a username</string>
+    <string name="dialog_hint_when_selecting_own_username">this will be the name of your contact</string>
+    <string name="dialog_select_own_username_proceed">check availability</string>
+    <string name="dialog_add_friend_verification_message">"Add "</string>
+    <string name="error_message_when_no_server_connection">Issues connecting to Server</string>
 
 </resources>
