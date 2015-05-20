@@ -49,13 +49,13 @@ public class ServerConnection {
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(R.string.server_base_url +"users/register");
+        HttpPost httppost = new HttpPost(MainActivity.getAppContext().getString(R.string.server_base_url) +"users/register");
         String responseText = "undefined";
 
         try {
             JSONObject jsonObj = new JSONObject();
             try {
-                jsonObj.put("username", MainActivity.getUserName());
+                jsonObj.put("username", adressBook.getUserName());
                 jsonObj.put("regid", regId);
                 jsonObj.put("publickey", keyHandler.getSerializationFromKey(keyHandler.getPubKey()));
                 jsonObj.put("keytimestamp", "notImplementedYet");
@@ -86,14 +86,14 @@ public class ServerConnection {
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(R.string.server_base_url + "messages/send");
+        HttpPost httppost = new HttpPost(MainActivity.getAppContext().getString(R.string.server_base_url) + "messages/send");
         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, adressBook.getContact(receiverName).getPubKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {
                 jsonObj.put("content", encryption[0]); //encrypted message
                 jsonObj.put("receiver", receiverName);
-                jsonObj.put("sender", MainActivity.getUserName());
+                jsonObj.put("sender", adressBook.getUserName());
                 jsonObj.put("keyblock", encryption[1]);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -123,7 +123,7 @@ public class ServerConnection {
         URL url = null;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL(R.string.server_base_url +"users/get/" + name);
+            url = new URL(MainActivity.getAppContext().getString(R.string.server_base_url) +"users/get/" + name);
             urlConnection = (HttpURLConnection) url.openConnection();
             if (urlConnection != null) {
                 urlConnection.setReadTimeout(10000);
@@ -167,7 +167,7 @@ public class ServerConnection {
         URL url = null;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL(R.string.server_base_url +"users/get/" + name);
+            url = new URL( MainActivity.getAppContext().getString(R.string.server_base_url) +"users/get/" + name);
             urlConnection = (HttpURLConnection) url.openConnection();
             if (urlConnection != null) {
                 urlConnection.setReadTimeout(1000);
@@ -184,6 +184,8 @@ public class ServerConnection {
                 return 2;
             }
         } catch (Exception e) {
+            Log.i(String.valueOf(R.string.debug_tag), "couldnt connect to server");
+            Log.i(String.valueOf(R.string.debug_tag), "connecting to url: " + MainActivity.getAppContext().getString(R.string.server_base_url) +"users/get/" + name);
            return 2;
         }
         JSONObject obj = null;
@@ -198,6 +200,7 @@ public class ServerConnection {
             }
 
         } catch (JSONException e) {
+            Log.i(String.valueOf(R.string.debug_tag), "problem with json: " + obj.toString());
             return 2;
         }
     }

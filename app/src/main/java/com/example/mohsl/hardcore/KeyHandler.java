@@ -59,7 +59,7 @@ public class KeyHandler {
     public KeyHandler() {
     }
 
-    public void generateAndStoreKeys() {
+    public boolean generateAndStoreKeys() {
         SecureRandom random = Utils.createFixedRandom();
         // create the RSA Key
         KeyPairGenerator generator = null;
@@ -75,23 +75,26 @@ public class KeyHandler {
             Log.i("Hardcore", "Public key:" + pubKey.toString());
             Log.i("Hardcore", "Private key:" + privKey.toString());
 
-            String FILENAME = "KeyPair.txt";
-            FileOutputStream fos = MainActivity.getAppContext().openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            FileOutputStream fos = MainActivity.getAppContext().openFileOutput(String.valueOf(R.string.file_name_for_saved_keys), Context.MODE_PRIVATE);
             ObjectOutputStream oout = new ObjectOutputStream(fos);
             oout.writeObject(pair);
             oout.close();
             fos.close();
 
-
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+            return false;
         } catch (NoSuchProviderException e) {
             e.printStackTrace();
+            return false;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public Key getPubKey() {
@@ -104,7 +107,7 @@ public class KeyHandler {
 
     public Key getPrivKey() {
         return privKey;
-    } // shouldn´t be used
+    } // shouldn't be used
 
     //use this function to serialize a key to encoded String, which can be used to send to servr or store in db
     public String getSerializationFromKey(Key key) {
@@ -132,7 +135,6 @@ public class KeyHandler {
 
     public Key getKeyFromSerialization(String encodedKey) {
         Object obj = null;
-        byte[] encodedBytes =null;
         byte[] decodedBytes = Base64.decode(encodedKey);
         ByteArrayInputStream bi = new ByteArrayInputStream(decodedBytes);
         ObjectInputStream oi = null;
@@ -160,13 +162,13 @@ public class KeyHandler {
 
     public void readInKeys() {
         try {
-            FileInputStream fis = MainActivity.getAppContext().openFileInput("KeyPair.txt");
+            FileInputStream fis = MainActivity.getAppContext().openFileInput(String.valueOf(R.string.file_name_for_saved_keys));
             ObjectInputStream ois = new ObjectInputStream(fis);
             Object obj = ois.readObject();
             assert (obj instanceof KeyPair);
             ois.close();
             fis.close();
-            Log.i("Hardcore", ((KeyPair) obj).getPrivate().toString());
+            Log.i(String.valueOf(R.string.debug_tag), ((KeyPair) obj).getPrivate().toString());
             setPubKey(((KeyPair) obj).getPublic());
             setPrivKey(((KeyPair) obj).getPrivate());
         } catch (IOException e) {
@@ -236,7 +238,7 @@ public class KeyHandler {
 
             byte[] decodedBytes = Base64.decode(messageText);
             plainText = sCipher.doFinal(decodedBytes);
-            Log.i("Hardcore", plainText.toString());
+            Log.i(String.valueOf(R.string.debug_tag), plainText.toString());
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

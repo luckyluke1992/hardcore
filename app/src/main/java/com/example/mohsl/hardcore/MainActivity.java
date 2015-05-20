@@ -42,19 +42,11 @@ public class MainActivity extends Activity {
     public static String PREFERENCE_FIRST_RUN ="first-run";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private static String USERNAME = "undefined";
-    private static int USERID = 0;
-    String SENDER_ID = "759857875885";
-    String regid;
+
+    private static String SENDER_ID = "759857875885";
+    private String regid;
     GoogleCloudMessaging gcm;
     private static Context context;
-
-    public static String getUserName() {
-        return USERNAME ;
-    }
-    public static int  getUserId() {
-        return USERID;
-    }
 
     private static TextView messageBox;
 
@@ -98,31 +90,34 @@ public class MainActivity extends Activity {
                     .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL)
                     .positiveText(getString(R.string.dialog_select_own_username_proceed))
                     .autoDismiss(false)
+                    .cancelable(false)
                     .input(R.string.dialog_add_friend_input_hint, R.string.empty, new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             int returnCode = serverConnection.checkIfContactExists(input.toString());
-                            if (returnCode ==1 ) {
+                            if (returnCode == 0) {
                                 PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.toString()).commit();
-                                USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), input.toString());
-                                USERID = adressBook.getContactId(getUserName());
-                                keyHandler.generateAndStoreKeys();
-                                adressBook.storeOwnContact(USERNAME);
+                                if (!keyHandler.generateAndStoreKeys()) {
+                                    Toast.makeText(getApplicationContext(), getString(R.string.error_message_storing_of_keys_to_file_fail),
+                                            Toast.LENGTH_LONG).show();
+                                }
+                                adressBook.storeOwnContact(PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), input.toString()));
                                 startRegistration();
                                 dialog.dismiss();
-                            } else if(returnCode == 0 ) {
+                            } else if (returnCode == 1) {
                                 dialog.setContent(getString(R.string.registration_username_taken_message));
-                            }
-                            else if(returnCode == 2){
+                            } else if (returnCode == 2) {
                                 dialog.setContent(getString(R.string.error_message_when_no_server_connection));
+                            }
+                            else{
+                                dialog.setContent("General issue");
                             }
                         }
                     }).show();
 
         }
         else{
-            USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), getString(R.string.undefined));
-            USERID = adressBook.getContactId(getUserName());
+            adressBook.setUserName(PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), getString(R.string.undefined)));
             keyHandler.readInKeys();
             startRegistration();
         }
@@ -359,7 +354,7 @@ public class MainActivity extends Activity {
         MainViewListAdapter adapter=new MainViewListAdapter(this, adressBook.getAllContactNames(), adressBook.getContactList());
         main.setOnItemClickListener(new sendMessageListener());
         main.setAdapter(adapter);
-        fillBox(getString(R.string.welcome_hello_message) + USERNAME + "!");
+        fillBox(getString(R.string.welcome_hello_message) + adressBook.getUserName() + "!");
     }
 
     public static Context getAppContext() {

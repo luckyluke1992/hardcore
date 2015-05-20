@@ -1,6 +1,7 @@
 package com.example.mohsl.hardcore;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +39,8 @@ public class MessageViewListAdapter extends ArrayAdapter<String> {
         TextView messageTextField = (TextView) rowView.findViewById(R.id.item);
         //ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
         //TextView extratxt = (TextView) rowView.findViewById(R.id.textView1);
-
-        if((messages.get(position)).getSenderId() == MainActivity.getUserId()) {
+        Log.i(getContext().getString(R.string.debug_tag), messages.get(position).getReceiverId() +"   " + messages.get(position).getReceiverId() + " "+ (messages.get(position).getSenderId() == 0));
+        if((messages.get(position)).getSenderId() == 0) {
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageTextField.getLayoutParams();
             params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);

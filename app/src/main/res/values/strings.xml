@@ -34,5 +34,7 @@
     <string name="dialog_add_friend_verification_message">"Add "</string>
     <string name="error_message_when_no_server_connection">Issues connecting to Server</string>
     <string name="server_base_url">http://luckyluke.selfhost.bz:1337/</string>
+    <string name="file_name_for_saved_keys">KeyPair.txt</string>
+    <string name="error_message_storing_of_keys_to_file_fail">File Access Issue, reinstall the Application</string>
 
 </resources>

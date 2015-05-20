@@ -60,7 +60,7 @@ public class DisplayMessageActivity extends Activity {
                 if (InputTextField.getText().length() > 0) {
                     String message = InputTextField.getText().toString();
                     if(serverConnection.pushMessage(contactName, message)){
-                        datasource.storeMessage(adressBook.getContactId(MainActivity.getUserName()), adressBook.getContactId(contactName), message);
+                        datasource.storeMessage(adressBook.getUserId(), adressBook.getContactId(contactName), message);
                         refreshView();
                         InputTextField.setText("");
                     }
