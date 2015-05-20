@@ -201,7 +201,10 @@ public class MainActivity extends Activity {
                     msg = "Device registered, registration ID=" + regid;
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
-                    serverConnection.registerUser(regid);
+                    if(!serverConnection.registerUser(regid)){
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_message_when_no_server_connection),
+                                Toast.LENGTH_LONG).show();
+                    }
                     // For this demo: we don't need to send it because the device will send
                     // upstream messages to a server that echo back the message using the
                     // 'from' address in the message.

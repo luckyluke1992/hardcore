@@ -36,18 +36,16 @@ public class ServerConnection {
         return instance;
     }
 
-    public ServerConnection() {
+    private  ServerConnection() {
         keyHandler = KeyHandler.getInstance();
         adressBook = AdressBook.getInstance();
     }
 
-    public void registerUser(String regId)
+    public boolean registerUser(String regId)
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(MainActivity.getAppContext().getString(R.string.server_base_url) +"users/register");
-        String responseText = "undefined";
-
         try {
             JSONObject jsonObj = new JSONObject();
             try {
@@ -58,25 +56,24 @@ public class ServerConnection {
                 Log.i("Hardcore",jsonObj.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
+                return false;
             }
             StringEntity entity = new StringEntity(jsonObj.toString(), HTTP.UTF_8);
             entity.setContentType("application/json");
             httppost.setEntity(entity);
             // Execute HTTP Post Request
-            //try to process response
-            //TODO
+            //TODO try to process response
             HttpResponse response = httpclient.execute(httppost);
-            responseText = response.getStatusLine().getReasonPhrase();
-            int rsp = response.getStatusLine().getStatusCode();
-            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag),"Response from Java Server was:" + responseText + "; " + rsp);
-
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
             Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
+            return false;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
+            return false;
         }
+        return true;
     }
     public boolean pushMessage(String receiverName, String message)
     {
@@ -158,7 +155,7 @@ public class ServerConnection {
         return key;
     }
 
-    public int checkIfContactExists(String name) {
+    public int checkIfContactExists(String name) { // 0 -> false, 1 --> true, 2--> Connection issue
         StringBuffer res = new StringBuffer();
         URL url = null;
         HttpURLConnection urlConnection = null;
