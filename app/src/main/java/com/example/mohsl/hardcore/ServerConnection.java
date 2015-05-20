@@ -10,7 +10,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,10 +24,8 @@ import java.security.Key;
 public class ServerConnection {
 
     private static ServerConnection instance;
-    private HardcoreDataSource datasource;
     private KeyHandler keyHandler;
     private AdressBook adressBook;
-    public static final String TAG = "Hardcore";
 
     public static ServerConnection getInstance()
     {
@@ -40,7 +37,6 @@ public class ServerConnection {
     }
 
     public ServerConnection() {
-        datasource = HardcoreDataSource.getInstance(MainActivity.getAppContext());
         keyHandler = KeyHandler.getInstance();
         adressBook = AdressBook.getInstance();
     }
@@ -72,14 +68,14 @@ public class ServerConnection {
             HttpResponse response = httpclient.execute(httppost);
             responseText = response.getStatusLine().getReasonPhrase();
             int rsp = response.getStatusLine().getStatusCode();
-            Log.i(TAG,"Response from Java Server was:" + responseText + "; " + rsp);
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag),"Response from Java Server was:" + responseText + "; " + rsp);
 
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
-            Log.i(TAG, "Couldn´t connect to Server");
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            Log.i(TAG, "Couldn´t connect to Server");
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
         }
     }
     public boolean pushMessage(String receiverName, String message)
@@ -102,16 +98,16 @@ public class ServerConnection {
             entity.setContentType("application/json");
             httppost.setEntity(entity);
             // Execute HTTP Post Request
-            Log.i(TAG,jsonObj.toString());
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag),jsonObj.toString());
             //TODO process response
             HttpResponse response = httpclient.execute(httppost);
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
-            Log.i(TAG, "Couldn´t connect to Server");
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
             return false;
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            Log.i(TAG, "Couldn´t connect to Server");
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t connect to Server");
             return false;
         }
         return true;
@@ -142,7 +138,7 @@ public class ServerConnection {
                 in.close();
                 urlConnection.disconnect();
             } else {
-                Log.i(TAG, "Couldn´t conect to Server");
+                Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Couldn´t conect to Server");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,9 +149,9 @@ public class ServerConnection {
         JSONObject obj = null;
         try {
             obj = new JSONObject(res.toString());
-            Log.i(TAG, res.toString());
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), res.toString());
             key = keyHandler.getKeyFromSerialization(obj.getString("publickey"));
-            Log.i(TAG, obj.getString("publickey"));
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), obj.getString("publickey"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -191,7 +187,7 @@ public class ServerConnection {
         JSONObject obj = null;
         try {
             obj = new JSONObject(res.toString());
-            Log.i(TAG, res.toString());
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), res.toString());
             if(obj.has("publickey")){
                 return 1;
             }

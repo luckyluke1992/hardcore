@@ -28,20 +28,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class MainActivity extends Activity {
 
-    public final static String EXTRA_MESSAGE = "com.example.hardcore.MESSAGE";
-    private KeyHandler keyHandler;
-    private ServerConnection serverConnection;
-    private AdressBook adressBook;
+    public  static final String EXTRA_MESSAGE = "com.example.hardcore.MESSAGE";
+    private static KeyHandler keyHandler;
+    private static ServerConnection serverConnection;
+    private static AdressBook adressBook;
     public static final String PROPERTY_REG_ID = "registration_id";
     public static String PREFERENCE_FIRST_RUN ="first-run";
     private static final String PROPERTY_APP_VERSION = "appVersion";
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     private static String SENDER_ID = "759857875885";
     private String regid;
@@ -102,7 +100,7 @@ public class MainActivity extends Activity {
                                             Toast.LENGTH_LONG).show();
                                 }
                                 adressBook.storeOwnContact(PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), input.toString()));
-                                startRegistration();
+                                registerDevice();
                                 dialog.dismiss();
                             } else if (returnCode == 1) {
                                 dialog.setContent(getString(R.string.registration_username_taken_message));
@@ -119,14 +117,14 @@ public class MainActivity extends Activity {
         else{
             adressBook.setUserName(PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username), getString(R.string.undefined)));
             keyHandler.readInKeys();
-            startRegistration();
+            registerDevice();
         }
         refreshView();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(getString(R.string.intent_refresh_main_view)));
     }
 
-    private void startRegistration(){
+    private void registerDevice(){
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
             regid = getRegistrationId(context);
@@ -265,7 +263,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
                             // Do something
-                            if(adressBook.isFriend(input.toString())){
+                            if(adressBook.isContact(input.toString())){
                                 dialog.setContent(getString(R.string.response_dialog_if_is_already_friend));
                             }
                             else if (1 == serverConnection.checkIfContactExists(input.toString())) {
@@ -313,10 +311,6 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    public static void fillBox(String debug) {
-        messageBox.setText(debug);
-    }
-
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
@@ -336,9 +330,6 @@ public class MainActivity extends Activity {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            //String message = intent.getStringExtra("message");
-            //Log.d("receiver", "Got message: " + message);
             refreshView();
         }
     };
@@ -354,7 +345,7 @@ public class MainActivity extends Activity {
         MainViewListAdapter adapter=new MainViewListAdapter(this, adressBook.getAllContactNames(), adressBook.getContactList());
         main.setOnItemClickListener(new sendMessageListener());
         main.setAdapter(adapter);
-        fillBox(getString(R.string.welcome_hello_message) + adressBook.getUserName() + "!");
+        messageBox.setText(getString(R.string.welcome_hello_message) + adressBook.getUserName() + "!");
     }
 
     public static Context getAppContext() {

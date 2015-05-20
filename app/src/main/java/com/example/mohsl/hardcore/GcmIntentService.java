@@ -24,15 +24,14 @@ import java.util.Map;
  * wake lock.
  */
 public class GcmIntentService extends IntentService {
-    public final static String EXTRA_MESSAGE = "com.example.hardcore.MESSAGE";
+
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
-    NotificationCompat.Builder builder;
 
     public GcmIntentService() {
         super("GcmIntentService");
     }
-    private HardcoreDataSource datasource;
+    private DataSource datasource;
     private KeyHandler keyHandler;
     private AdressBook adressBook;
     private ServerConnection serverConnection;
@@ -74,7 +73,7 @@ public class GcmIntentService extends IntentService {
     private void sendNotification(Bundle data) {
 
         keyHandler=KeyHandler.getInstance();
-        datasource = HardcoreDataSource.getInstance(this);
+        datasource = DataSource.getInstance(this);
         adressBook = AdressBook.getInstance();
         serverConnection = ServerConnection.getInstance();
 
@@ -117,12 +116,13 @@ public class GcmIntentService extends IntentService {
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 
-        if(!adressBook.isFriend(messageMap.get(getString(R.string.message_sender)))){
+        if(!adressBook.isContact(messageMap.get(getString(R.string.message_sender)))){
             adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
         }
         int senderId = adressBook.getContactId(messageMap.get(getString(R.string.message_sender)));
-        int receiverId = adressBook.getContactId(adressBook.getMyContactName());
-        datasource.storeMessage(senderId,receiverId, messageMap.get(getString(R.string.message_content)));
+        int receiverId = adressBook.getContactId(adressBook.getUserName());
+        Message messageObject = new Message(senderId, receiverId,  messageMap.get(getString(R.string.message_content)));
+        datasource.storeMessageInDb(messageObject);
         adressBook.setUnreadMessage(messageMap.get(getString(R.string.message_sender)));
 
         //send intent to mainActivity for refresh purpose:

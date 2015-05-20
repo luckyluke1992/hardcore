@@ -4,9 +4,9 @@ package com.example.mohsl.hardcore;
  * Created by mohsl on 26.11.2014.
  */
 public class Message {
-    int senderId;
-    int receiverId;
-    String messageText;
+    private int senderId;
+    private int receiverId;
+    private String messageText;
 
     public Message(int mSenderId, int mReceiverId, String mMessagetext) {
         senderId = mSenderId;

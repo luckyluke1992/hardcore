@@ -23,7 +23,7 @@ import java.util.List;
 
 public class DisplayMessageActivity extends Activity {
 
-    private  HardcoreDataSource datasource;
+    private DataSource datasource;
     private ServerConnection serverConnection;
     private AdressBook adressBook;
 
@@ -41,7 +41,7 @@ public class DisplayMessageActivity extends Activity {
 
         conversationHistoryView = (ListView) findViewById(R.id.conversation_history_layout);
 
-        datasource = HardcoreDataSource.getInstance(this);
+        datasource = DataSource.getInstance(this);
         Intent intent = getIntent();
         contactName = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         serverConnection = ServerConnection.getInstance();
@@ -58,9 +58,10 @@ public class DisplayMessageActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if (InputTextField.getText().length() > 0) {
-                    String message = InputTextField.getText().toString();
-                    if(serverConnection.pushMessage(contactName, message)){
-                        datasource.storeMessage(adressBook.getUserId(), adressBook.getContactId(contactName), message);
+                    String messagetext = InputTextField.getText().toString();
+                    if(serverConnection.pushMessage(contactName, messagetext)){
+                        Message messageObject = new Message(adressBook.getUserId(), adressBook.getContactId(contactName), messagetext);
+                        datasource.storeMessageInDb(messageObject);
                         refreshView();
                         InputTextField.setText("");
                     }
@@ -99,7 +100,7 @@ public class DisplayMessageActivity extends Activity {
     public void refreshView()
     {
         adressBook.setReadMessage(contactName);
-        List<Message> conversationHistory = datasource.getConversationHistory(adressBook.getContactId(contactName));
+        List<Message> conversationHistory = datasource.getConversationHistoryFromDb(adressBook.getContactId(contactName));
         final ListView listview = (ListView) findViewById(R.id.conversation_history_layout);
         List<String> conversationList = new ArrayList<String>();
         for(int i=0; i<conversationHistory.size();i++)
@@ -112,7 +113,7 @@ public class DisplayMessageActivity extends Activity {
 
     }
     // Our handler for received Intents. This will be called whenever an Intent
-    // with an action named "custom-event-name" is broadcasted.
+    // with an action correctlynamed is broadcasted.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

@@ -72,8 +72,8 @@ public class KeyHandler {
             Key privKey = pair.getPrivate();
             this.setPrivKey(privKey);
             this.setPubKey(pubKey);
-            Log.i("Hardcore", "Public key:" + pubKey.toString());
-            Log.i("Hardcore", "Private key:" + privKey.toString());
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Public key:" + pubKey.toString());
+            Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Private key:" + privKey.toString());
 
             FileOutputStream fos = MainActivity.getAppContext().openFileOutput(String.valueOf(R.string.file_name_for_saved_keys), Context.MODE_PRIVATE);
             ObjectOutputStream oout = new ObjectOutputStream(fos);
@@ -105,11 +105,7 @@ public class KeyHandler {
         this.pubKey = pubKey;
     }
 
-    public Key getPrivKey() {
-        return privKey;
-    } // shouldn't be used
-
-    //use this function to serialize a key to encoded String, which can be used to send to servr or store in db
+    //use this function to serialize a key to encoded String, which can be used to send to server or store in db
     public String getSerializationFromKey(Key key) {
 
         //TODO: Check alternative
