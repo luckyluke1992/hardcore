@@ -52,8 +52,6 @@ public class DisplayMessageActivity extends Activity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("refreshMessageView"));
 
-        //GraphicShitzzz
-
         refreshView();
         ImageButton sendButton =(ImageButton)findViewById(R.id.sendButton);
         sendButton.setOnClickListener( new View.OnClickListener() {
@@ -100,19 +98,7 @@ public class DisplayMessageActivity extends Activity {
 
     public void refreshView()
     {
-        /*
-        if(datasource.getUnreadMessageAvailable(datasource.getContactId(contactName))) {
-            NotificationManager notifyManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            notifyManager.cancelAll();
-        }
-        Log.i("Debug refreshView",""+datasource.getUnreadMessageAvailable(datasource.getContactId(contactName)) );
-*/
-        //datasource.clearConversationHistory(contactName);
-        //serverConnection.pull();
-
-        //change the message - read - status
         adressBook.setReadMessage(contactName);
-
         List<Message> conversationHistory = datasource.getConversationHistory(adressBook.getContactId(contactName));
         final ListView listview = (ListView) findViewById(R.id.conversation_history_layout);
         List<String> conversationList = new ArrayList<String>();
@@ -123,33 +109,10 @@ public class DisplayMessageActivity extends Activity {
         ArrayAdapter adapter = new MessageViewListAdapter(this, conversationList, conversationHistory);
 
         listview.setAdapter(adapter);
-        /*
-        TableRow r1;
-        TableLayout.LayoutParams tableRowParams=
-                new TableLayout.LayoutParams
-                        (TableLayout.LayoutParams.FILL_PARENT,TableLayout.LayoutParams.WRAP_CONTENT);
-        tableRowParams.setMargins(5,5,5,5);
 
-        for(int i=0; i<conversationHistory.size();i++)
-        {
-            r1 = new TableRow(this);
-            r1.setLayoutParams(tableRowParams);
-            EditText messageText = new EditText(this);
-            messageText.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-            if(conversationHistory.get(i).getReceiverId() == 0)
-            {
-                r1.setGravity(0);
-                r1.setBackgroundColor(Color.GREEN);
-            }
-            messageText.setText("von: " + conversationHistory.get(i).getSenderId() + " an :" +
-                    conversationHistory.get(i).getReceiverId() + ": " +conversationHistory.get(i).getMessageText());
-            messageText.setKeyListener(null);
-            r1.addView(messageText);
-            conversationHistoryView.addView(r1);
-        }*/
     }
     // Our handler for received Intents. This will be called whenever an Intent
-// with an action named "custom-event-name" is broadcasted.
+    // with an action named "custom-event-name" is broadcasted.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

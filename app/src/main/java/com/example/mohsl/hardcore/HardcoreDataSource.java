@@ -38,22 +38,6 @@ public class HardcoreDataSource {
     }
 
 
-    public List<Integer> getAllContacts() {
-        List<Integer> contacts = new ArrayList<Integer>();
-
-        Cursor cursor = database.query(MySQLiteHelper.TABLE_CONTACTS,
-                allColumns, null, null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            contacts.add(Integer.parseInt(cursor.getString(0)));
-            cursor.moveToNext();
-        }
-        // make sure to close the cursor
-        cursor.close();
-        return contacts;
-    }
-
     public List<Contact> getAllContactsFromDb() {
         List<Contact> contacts = new ArrayList<Contact>();
 
@@ -94,23 +78,6 @@ public class HardcoreDataSource {
         return contact;
     }
 
-    /*
-    public List<String> getAllContactNames() {
-        List<String> contacts = new ArrayList<String>();
-
-        Cursor cursor = database.query(MySQLiteHelper.TABLE_CONTACTS,
-                new String[]{MySQLiteHelper.COLUMN_CONTACT_ID, MySQLiteHelper.COLUMN_CONTACT} , null, null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            contacts.add(cursor.getString(1));
-            cursor.moveToNext();
-        }
-        // make sure to close the cursor
-        cursor.close();
-        return contacts;
-    }*/
-
     public List<Message> getConversationHistory(int contactId) {
         List<Message> messages = new ArrayList<Message>();
         Cursor cursor = database.query(MySQLiteHelper.TABLE_MESSAGES,
@@ -144,22 +111,6 @@ public class HardcoreDataSource {
                 MySQLiteHelper.COLUMN_CONTACT + "= '" + sendername +"'";
         database.execSQL(Insert_Data);
     }
-/*
-    public boolean getUnreadMessageAvailable(int contactId){
-        boolean available = false;
-
-        Cursor cursor = database.query(MySQLiteHelper.TABLE_CONTACTS,
-                new String[]{MySQLiteHelper.COLUMN_MESSAGE_ID, MySQLiteHelper.COLUMN_UNREAD_MESSAGE,},  MySQLiteHelper.COLUMN_CONTACT_ID + " = " + contactId , null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            available =Boolean.getBoolean(cursor.getString(1));
-            cursor.moveToNext();
-        }
-        // make sure to close the cursor
-        cursor.close();
-        return available;
-    }*/
 
     public void storeReadMessageInDb(String sendername){
         final String Insert_Data="UPDATE " + MySQLiteHelper.TABLE_CONTACTS +
@@ -192,12 +143,7 @@ public class HardcoreDataSource {
         cursor.close();
         return contactName;
     }
-    /*
-    public boolean storeNewContact(String contactName, Key pubKey)
-    {
 
-    }
-*/
     public int getContactId(String contactName)
     {
         int contactId = 0;
@@ -214,17 +160,6 @@ public class HardcoreDataSource {
         return contactId;
     }
 
-    public void clearConversationHistory(String contactName)
-    {
-        int SenderId = getContactId(MainActivity.getUserName());
-        //int ReceiverId = getContactId(contactName);
-
-        final String DeleteMessages= "DELETE FROM " +MySQLiteHelper.TABLE_MESSAGES +
-                " WHERE " + MySQLiteHelper.COLUMN_SENDER_ID +" <> " + SenderId +";";
-
-        database.execSQL(DeleteMessages);
-        //database.execSQL("DELETE FROM " + MySQLiteHelper.TABLE_MESSAGES);
-    }
 
     public void close() {
         dbHelper.close();

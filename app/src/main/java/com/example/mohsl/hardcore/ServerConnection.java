@@ -45,63 +45,11 @@ public class ServerConnection {
         adressBook = AdressBook.getInstance();
     }
 
-    public void pull() //Shouldn´t be used anymore
-    {
-        StringBuffer res = new StringBuffer();
-        URL url = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            url = new URL("http://luckyluke.selfhost.bz:1337/messages/" + MainActivity.getUserName());
-            urlConnection = (HttpURLConnection) url.openConnection();
-            if (urlConnection != null) {
-                urlConnection.setReadTimeout(10000);
-                urlConnection.setConnectTimeout(15000);
-                urlConnection.setRequestMethod("GET");
-
-                //int responseCode = urlConnection.getResponseCode();
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null) {
-                    res.append(inputLine);
-                }
-                in.close();
-                urlConnection.disconnect();
-            } else {
-                Log.i(TAG, "Couldn´t connect to Server");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //JSON parsing
-        String s = res.toString();
-        JSONArray reader = null;
-        JSONObject messageObject = null;
-        int senderId=0;
-        int receiverId=0;
-        String message="null";
-        try {
-            reader = new JSONArray(s); // array containing all messages
-            //go through all messages and store them
-            for(int i=0; i<reader.length();i++) {
-                messageObject = reader.getJSONObject(i);
-                //MainActivity.fillBox(messageObject.toString()); // because debug in android is cancer
-                senderId = adressBook.getContactId(messageObject.getString("sender"));
-                receiverId = adressBook.getContactId(messageObject.getString("receiver"));
-                message = messageObject.getString("content");
-                datasource.storeMessage(senderId,receiverId, message);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void registerUser(String regId)
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://luckyluke.selfhost.bz:1337/users/register");
+        HttpPost httppost = new HttpPost(R.string.server_base_url +"users/register");
         String responseText = "undefined";
 
         try {
@@ -115,13 +63,10 @@ public class ServerConnection {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             StringEntity entity = new StringEntity(jsonObj.toString(), HTTP.UTF_8);
             entity.setContentType("application/json");
             httppost.setEntity(entity);
-
             // Execute HTTP Post Request
-
             //try to process response
             //TODO
             HttpResponse response = httpclient.execute(httppost);
@@ -141,9 +86,8 @@ public class ServerConnection {
     {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://luckyluke.selfhost.bz:1337/messages/send");
-
-         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, adressBook.getContact(receiverName).getPubKey());
+        HttpPost httppost = new HttpPost(R.string.server_base_url + "messages/send");
+        String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, adressBook.getContact(receiverName).getPubKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {
@@ -154,16 +98,13 @@ public class ServerConnection {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             StringEntity entity = new StringEntity(jsonObj.toString(), HTTP.UTF_8);
             entity.setContentType("application/json");
             httppost.setEntity(entity);
             // Execute HTTP Post Request
             Log.i(TAG,jsonObj.toString());
-
             //TODO process response
             HttpResponse response = httpclient.execute(httppost);
-
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
             Log.i(TAG, "Couldn´t connect to Server");
@@ -182,7 +123,7 @@ public class ServerConnection {
         URL url = null;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL("http://luckyluke.selfhost.bz:1337/users/get/" + name);
+            url = new URL(R.string.server_base_url +"users/get/" + name);
             urlConnection = (HttpURLConnection) url.openConnection();
             if (urlConnection != null) {
                 urlConnection.setReadTimeout(10000);
@@ -226,7 +167,7 @@ public class ServerConnection {
         URL url = null;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL("http://luckyluke.selfhost.bz:1337/users/get/" + name);
+            url = new URL(R.string.server_base_url +"users/get/" + name);
             urlConnection = (HttpURLConnection) url.openConnection();
             if (urlConnection != null) {
                 urlConnection.setReadTimeout(1000);

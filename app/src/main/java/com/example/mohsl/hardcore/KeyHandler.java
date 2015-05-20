@@ -82,44 +82,7 @@ public class KeyHandler {
             oout.close();
             fos.close();
 
-            //write keys in file with the awesome pem writer class
-            /*try {
 
-                //private Key
-                File file = new File(MainActivity.getAppContext().getFilesDir(), "privateKey.txt");
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                FileOutputStream fos = MainActivity.getAppContext().openFileOutput("privateKey.txt", Context.MODE_PRIVATE);
-                FileWriter fileWriter = new FileWriter(fos.getFD());
-                PEMWriter pemWriter = new PEMWriter(fileWriter);
-                pemWriter.writeObject(pair.getPrivate());
-                pemWriter.flush();
-                pemWriter.close();
-                fileWriter.close();
-                fos.close();
-
-                //private Key
-                File file2 = new File(MainActivity.getAppContext().getFilesDir(), "publicKey.txt");
-                if (!file2.exists()) {
-                    file2.createNewFile();
-                }
-                FileOutputStream fos2 = MainActivity.getAppContext().openFileOutput("publicKey.txt", Context.MODE_PRIVATE);
-                FileWriter fileWriter2 = new FileWriter(fos2.getFD());
-                PEMWriter pemWriter2 = new PEMWriter(fileWriter2);
-                pemWriter2.writeObject(pair.getPublic());
-                pemWriter2.flush();
-                pemWriter2.close();
-                fileWriter2.close();
-                fos2.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (NoSuchProviderException e) {
@@ -145,28 +108,7 @@ public class KeyHandler {
 
     //use this function to serialize a key to encoded String, which can be used to send to servr or store in db
     public String getSerializationFromKey(Key key) {
-        /*
-        byte[] res = null;
-        byte[] encodedBytes = null;
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            ObjectOutputStream o = null;
-            //Mikes idea to make code cleaner
-            //Class<?> c = Key.class;
-            //c.getField("publicKey");
 
-            o = new ObjectOutputStream(b);
-            o.writeObject(key);
-            res = b.toByteArray();
-            encodedBytes = Base64.encode(res);
-            o.close();
-            b.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new String(encodedBytes);
-        */
         //TODO: Check alternative
         // Send the public key bytes to the other party...
         byte[] publicKeyBytes = key.getEncoded();
@@ -196,14 +138,6 @@ public class KeyHandler {
         ObjectInputStream oi = null;
         Key pubKey2 = null;
 
-        //try {
-            /* TODO: Change encoding
-            encodedBytes = pubKey.getEncoded();
-            Key newKey = (PublicKey)PublicKeyFactory.createKey(pubKey.getEncoded());
-            Log.i(String.valueOf(R.string.debug_tag), newKey.toString());
-            */
-
-            //TODO: Check next try
             try {
                 //encodedBytes = Base64.encode(pubKey.getEncoded());
                 X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(decodedBytes);
@@ -217,17 +151,6 @@ public class KeyHandler {
             } catch (NoSuchProviderException e) {
                 e.printStackTrace();
             }
-            /*
-            oi = new ObjectInputStream(bi);
-            obj = oi.readObject();
-            assert (obj instanceof Key);
-            oi.close();
-            bi.close();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
         return pubKey2;
     }
 

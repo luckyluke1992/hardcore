@@ -41,18 +41,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_RECEIVER_ID + ", " + COLUMN_MESSAGE
             + " text not null);";
 
-    //Add sample messages
-    private static final String ADD_MESSAGES =
-            "INSERT INTO  " + TABLE_MESSAGES + " (" + COLUMN_SENDER_ID + ", " + COLUMN_RECEIVER_ID + ", " + COLUMN_MESSAGE + ") " +
-            " VALUES " +
-            "(1, 0, 'Hello') , (1, 0, 'Was geht') , (2, 0, 'Mongo') , (3, 0, 'Liebe')";
-
-    //Add  contacts
-    private static final String ADD_CONTACTS =
-            "INSERT INTO  " + TABLE_CONTACTS + " (" + COLUMN_CONTACT + ", " + COLUMN_PUBLIC_KEY + ", " + COLUMN_UNREAD_MESSAGE + ") " +
-                    " VALUES " +
-                    "('lukas', 'THIS IS THE DUMMY KEY', 'false')"; // , ('hans', 'false') , ('fritz', 'false') , ('robin', 'false') , ('manu', 'false') , ('dieter', 'false')";
-
     MySQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -62,14 +50,10 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         Log.i("Hardcore, DB create:", DATABASE_CONTACTS_CREATE);
         db.execSQL(DATABASE_CONTACTS_CREATE);
         db.execSQL(DATABASE_MESSAGES_CREATE);
-        //db.execSQL(ADD_CONTACTS);
-        //db.execSQL(ADD_MESSAGES);
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //db.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS);
-        //db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
-        //onCreate(db);
     }
 }

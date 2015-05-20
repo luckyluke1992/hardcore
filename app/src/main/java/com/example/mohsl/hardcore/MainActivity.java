@@ -78,14 +78,11 @@ public class MainActivity extends Activity {
         //connect adressbook
         adressBook = AdressBook.getInstance();
 
-
         //conntec to db and establish network connection
         serverConnection = ServerConnection.getInstance();
 
         //connect to Keyhandler
         keyHandler = KeyHandler.getInstance();
-
-
 
         //Check wheter first execution:
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
@@ -94,32 +91,6 @@ public class MainActivity extends Activity {
          //TODO: bit crappy, since prefs are accessed twice :S
 
         if(firstRun) {
-            /*
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(getString(R.string.input_instruction_for_a_friends_username));
-
-            // Set up the input
-            final EditText input = new EditText(this);
-            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PreferenceManager.getDefaultSharedPreferences(context).edit().putString(getString(R.string.shared_prefs_username), input.getText().toString()).commit();
-                    USERNAME = PreferenceManager.getDefaultSharedPreferences(context).getString(getString(R.string.shared_prefs_username),input.getText().toString());
-                    USERID = datasource.getContactId(getUserName());
-                    keyHandler.generateAndStoreKeys();
-                    Contact contact = new Contact(USERNAME, false, keyHandler.getPubKey());
-                    datasource.storeContact(contact);
-                    startRegistration();
-                }
-            });
-            builder.show();
-            */
-            //TODO: implement following Alertcode
 
             currentDialog =  new MaterialDialog.Builder(this)
                     .title(getString(R.string.input_dialog_to_input_own_username))
@@ -156,23 +127,10 @@ public class MainActivity extends Activity {
             startRegistration();
         }
         refreshView();
-        /*
-        List<Contact> contacts = datasource.getAllContactsFromDb();
-        List<String> contactnames = datasource.getAllContactNames();
-
-        ListView main = (ListView) findViewById(R.id.main_layout);
-        CustomListAdapter adapter=new CustomListAdapter(this, contactnames, contacts);
-        main.setOnItemClickListener(new sendMessageListener());
-        main.setAdapter(adapter);*/
-        //initialize intentReciever for refresh purposes
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(getString(R.string.intent_refresh_main_view)));
-    }/*
-        ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, contacts);
-        main.setOnItemClickListener(new sendMessageListener());
-        main.setAdapter(modeAdapter);
     }
-*/
+
     private void startRegistration(){
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
@@ -248,15 +206,12 @@ public class MainActivity extends Activity {
                     }
                     regid = gcm.register(SENDER_ID);
                     msg = "Device registered, registration ID=" + regid;
-
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
                     serverConnection.registerUser(regid);
-
                     // For this demo: we don't need to send it because the device will send
                     // upstream messages to a server that echo back the message using the
                     // 'from' address in the message.
-
                     // Persist the regID - no need to register again.
                     storeRegistrationId(context, regid);
                 } catch (IOException ex) {
@@ -329,49 +284,6 @@ public class MainActivity extends Activity {
                             }
                         }
                     }).show();
-
-            /*final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-            dialog.setTitle("Input a friends name");
-            dialog.setCancelable(true);
-
-            final Context myActivity = this;
-            // Set up the input
-            final EditText input = new EditText(this);
-            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
-            input.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (serverConnection.checkIfContactExists(input.getText().toString())) {
-                        Log.i(TAG, "contact exists");
-                        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Contact newContact = new Contact(input.getText().toString(), false, serverConnection.requestPubKey(input.getText().toString()));
-                                Log.i(TAG, newContact.toString());
-                                datasource.storeContact(newContact);
-                            }
-                        });
-                        //dialog.setView(input);
-                        dialog.show();
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                }
-            });
-            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            dialog.setView(input);
-            dialog.show();*/
         }
         else if(id==R.id.action_search)
         {
@@ -391,7 +303,6 @@ public class MainActivity extends Activity {
             currentDialog.dismiss();
             currentDialog = null;
         }
-
         currentDialog = new MaterialDialog.Builder(this)
                 .title(R.string.dialog_add_friend_conirm_dialog)
                 .content(getString(R.string.dialog_add_friend_verification_message) + contactName.toString() + "?")
@@ -410,7 +321,6 @@ public class MainActivity extends Activity {
     public static void fillBox(String debug) {
         messageBox.setText(debug);
     }
-
 
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);

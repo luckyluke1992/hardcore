@@ -68,7 +68,6 @@ public class GcmIntentService extends IntentService {
         // Release the wake lock provided by the WakefulBroadcastReceiver.
         GcmBroadcastReceiver.completeWakefulIntent(intent);
     }
-
     // Put the message into a notification and post it.
     // This is just one simple example of what you might choose to do with
     // a GCM message.
@@ -85,28 +84,9 @@ public class GcmIntentService extends IntentService {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
-        //Message parsing
-
         Map<String, String> messageMap = new HashMap<>();
 
-        //ugly parsing
-/*
-        String s = msg.toString().replace("[","");
-        s = s.toString().replace("]","");
-        s = s.replace("{","");
-        s = s.replace("}","");
-        s = s.split("Bundle")[1];
-        String[] messageArray = s.split(",");
-
-
-        for(int i=0; i<messageArray.length; i++){
-            s = messageArray[i].trim();
-            String[] temp = s.split("=");
-            messageMap.put(temp[0], temp[1]);
-        }
-*/
         // nice parsing
-
         String content =  data.getString(getString(R.string.message_content));
         String sender =  data.getString(getString(R.string.message_sender));
         String keyBlock = data.getString(getString(R.string.message_keyblock));
@@ -114,7 +94,6 @@ public class GcmIntentService extends IntentService {
         messageMap.put(getString(R.string.message_sender), sender);
         messageMap.put(getString(R.string.message_content), content);
         messageMap.put(getString(R.string.message_keyblock), keyBlock);
-
 
         //decrypt Message
         Log.i(getString(R.string.debug_tag),messageMap.toString());
@@ -135,14 +114,12 @@ public class GcmIntentService extends IntentService {
                         .setVibrate(pattern)
                         .setLights(Color.MAGENTA, 500, 500);
 
-
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 
         if(!adressBook.isFriend(messageMap.get(getString(R.string.message_sender)))){
             adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
         }
-
         int senderId = adressBook.getContactId(messageMap.get(getString(R.string.message_sender)));
         int receiverId = adressBook.getContactId(adressBook.getMyContactName());
         datasource.storeMessage(senderId,receiverId, messageMap.get(getString(R.string.message_content)));
