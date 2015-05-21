@@ -1,5 +1,7 @@
 package com.example.mohsl.hardcore;
 
+import android.util.Log;
+
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,7 @@ public class AdressBook {
     private static DataSource dataSource;
     private static KeyHandler keyHandler;
     private  String USERNAME;
-    private  int USERID = 0;
+    private  int USERID = 1; // db starts at id 1
 
     private List<Contact> contactList;
 
@@ -43,6 +45,7 @@ public class AdressBook {
     public int getContactId(String name) {
         int id=0;
         for (int i=0; i<contactList.size();i++){
+            //Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "element: " + i + " name:" + contactList.get(i).getName() + " id from db: " + contactList.get(i).getId());
             if(contactList.get(i).getName().equals(name)){
                 id = contactList.get(i).getId();
             }

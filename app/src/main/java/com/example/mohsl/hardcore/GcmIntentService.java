@@ -120,7 +120,7 @@ public class GcmIntentService extends IntentService {
             adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
         }
         int senderId = adressBook.getContactId(messageMap.get(getString(R.string.message_sender)));
-        int receiverId = adressBook.getContactId(adressBook.getUserName());
+        int receiverId = adressBook.getUserId();
         Message messageObject = new Message(senderId, receiverId,  messageMap.get(getString(R.string.message_content)));
         datasource.storeMessageInDb(messageObject);
         adressBook.setUnreadMessage(messageMap.get(getString(R.string.message_sender)));

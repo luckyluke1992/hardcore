@@ -60,6 +60,7 @@ public class DisplayMessageActivity extends Activity {
                 if (InputTextField.getText().length() > 0) {
                     String messagetext = InputTextField.getText().toString();
                     if(serverConnection.pushMessage(contactName, messagetext)){
+                        Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), ""+ adressBook.getUserId()+ "  "+ adressBook.getContactId(contactName));
                         Message messageObject = new Message(adressBook.getUserId(), adressBook.getContactId(contactName), messagetext);
                         datasource.storeMessageInDb(messageObject);
                         refreshView();

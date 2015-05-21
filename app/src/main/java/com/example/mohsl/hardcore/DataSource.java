@@ -6,6 +6,7 @@ import java.util.List;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 public class DataSource {
 
@@ -49,6 +50,7 @@ public class DataSource {
             //1 --> Name
             //2 --> PUbKey
             //3 --> MessageAvailable
+            //Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "integer from _id field: " +Integer.parseInt(cursor.getString(0)) );
             contacts.add(new Contact(Integer.parseInt(cursor.getString(0)),cursor.getString(1), Boolean.parseBoolean(cursor.getString(3)), keyHandeler.getKeyFromSerialization(cursor.getString(2))));
             cursor.moveToNext();
         }
