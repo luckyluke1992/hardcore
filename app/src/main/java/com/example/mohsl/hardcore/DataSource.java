@@ -99,6 +99,25 @@ public class DataSource {
         return messages;
     }
 
+    public List<Message> getConversationHistoryWithMyOwnFromDb(int contactId) {
+        List<Message> messages = new ArrayList<Message>();
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_MESSAGES,
+                new String[]{MySQLiteHelper.COLUMN_MESSAGE_ID, MySQLiteHelper.COLUMN_SENDER_ID,
+                        MySQLiteHelper.COLUMN_RECEIVER_ID, MySQLiteHelper.COLUMN_MESSAGE},
+                MySQLiteHelper.COLUMN_SENDER_ID + " = " + contactId +
+                        " AND " +  MySQLiteHelper.COLUMN_RECEIVER_ID + " = " + contactId ,
+                null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            messages.add(new Message(Integer.parseInt(cursor.getString(1)),
+                    Integer.parseInt(cursor.getString(2)), cursor.getString(3)));
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return messages;
+    }
     public void storeMessageInDb(Message message)
     {
         final String Insert_Data="INSERT INTO " + MySQLiteHelper.TABLE_MESSAGES +

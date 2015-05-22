@@ -114,7 +114,6 @@ public class KeyHandler {
 
         //Convert Public key to String
         String pubKeyStr = new String(Base64.encode(publicKeyBytes));
-
         return pubKeyStr;
     }
 

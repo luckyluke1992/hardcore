@@ -1,7 +1,7 @@
 package com.example.mohsl.hardcore;
 
 import android.app.Activity;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,13 +44,16 @@ public class MessageViewListAdapter extends ArrayAdapter<String> {
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageTextField.getLayoutParams();
             params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            messageTextField.setBackgroundResource(R.drawable.message_list_item_my_message_background);
+            messageTextField.setGravity(Gravity.RIGHT);//Aligns text right
             messageTextField.setLayoutParams(params);
         }
         else{
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageTextField.getLayoutParams();
             params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            messageTextField.setTextColor(R.color.green); //TODO: Fix color issue
+            //messageTextField.setTextColor(R.color.green); //TODO: Fix color issue
+            messageTextField.setBackgroundResource(R.drawable.message_list_item_friend_message_background);
             messageTextField.setLayoutParams(params);
         }
 

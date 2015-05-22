@@ -26,7 +26,7 @@ public class AdressBook {
         return instance;
     }
 
-    public AdressBook(){;
+    private AdressBook(){;
         dataSource =  DataSource.getInstance(MainActivity.getAppContext());
         contactList = dataSource.getAllContactsFromDb();
         keyHandler = KeyHandler.getInstance();

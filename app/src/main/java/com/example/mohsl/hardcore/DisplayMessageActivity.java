@@ -101,7 +101,13 @@ public class DisplayMessageActivity extends Activity {
     public void refreshView()
     {
         adressBook.setReadMessage(contactName);
-        List<Message> conversationHistory = datasource.getConversationHistoryFromDb(adressBook.getContactId(contactName));
+        List<Message> conversationHistory =null;
+        if(contactName.equals(adressBook.getUserName())){
+            conversationHistory = datasource.getConversationHistoryWithMyOwnFromDb(adressBook.getContactId(contactName));
+        }
+        else {
+            conversationHistory = datasource.getConversationHistoryFromDb(adressBook.getContactId(contactName));
+        }
         final ListView listview = (ListView) findViewById(R.id.conversation_history_layout);
         List<String> conversationList = new ArrayList<String>();
         for(int i=0; i<conversationHistory.size();i++)
@@ -109,7 +115,6 @@ public class DisplayMessageActivity extends Activity {
                 conversationList.add(conversationHistory.get(i).getMessageText());
         }
         ArrayAdapter adapter = new MessageViewListAdapter(this, conversationList, conversationHistory);
-
         listview.setAdapter(adapter);
 
     }
