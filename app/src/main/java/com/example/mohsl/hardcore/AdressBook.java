@@ -3,6 +3,7 @@ package com.example.mohsl.hardcore;
 import android.util.Log;
 
 import java.security.Key;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class AdressBook {
         return id;
     }
 
-    public void storeNewContact(String name, Key publicKey){
+    public void storeNewContact(String name, PublicKey publicKey){
         Contact newContact = new Contact(getNumberOfContacts(), name, false, publicKey);
         dataSource.storeContactInDb(newContact);
         contactList = dataSource.getAllContactsFromDb();

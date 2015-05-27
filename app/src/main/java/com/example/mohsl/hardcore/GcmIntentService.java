@@ -89,17 +89,31 @@ public class GcmIntentService extends IntentService {
         String content =  data.getString(getString(R.string.message_content));
         String sender =  data.getString(getString(R.string.message_sender));
         String keyBlock = data.getString(getString(R.string.message_keyblock));
+        String signature = data.getString(getString(R.string.message_signature));
 
         messageMap.put(getString(R.string.message_sender), sender);
         messageMap.put(getString(R.string.message_content), content);
         messageMap.put(getString(R.string.message_keyblock), keyBlock);
+        messageMap.put(getString(R.string.message_signature), signature);
+
 
         //decrypt Message
-        Log.i(getString(R.string.debug_tag),messageMap.toString());
-        String encryptedMessage = keyHandler.decryptMessage(messageMap.get(getString(R.string.message_content)), keyHandler.getKeyBlockfromEncoded(messageMap.get(getString(R.string.message_keyblock))));
-        Log.i(getString(R.string.debug_tag),encryptedMessage);
-        messageMap.put(getString(R.string.message_content), encryptedMessage);
+        Log.i(getString(R.string.debug_tag), messageMap.toString());
+        String decryptedMessage = keyHandler.decryptMessage(messageMap.get(getString(R.string.message_content)), keyHandler.getKeyBlockfromEncoded(messageMap.get(getString(R.string.message_keyblock))));
+        Log.i(getString(R.string.debug_tag),decryptedMessage);
+        messageMap.put(getString(R.string.message_content), decryptedMessage);
 
+        if(!adressBook.isContact(messageMap.get(getString(R.string.message_sender)))){
+            adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
+        }
+
+        if(keyHandler.verifySignature(messageMap.get(getString(R.string.message_content)), messageMap.get(getString(R.string.message_signature)), adressBook.getContact(messageMap.get(getString(R.string.message_sender))).getPubKey())) {
+            Log.i("hardcore", "signature does match");
+        } else {
+            // TODO: what happens if the signature does not match???
+            messageMap.put(getString(R.string.message_content), messageMap.get(getString(R.string.message_content)) + getString(R.string.append_message_text_untrusted));
+            Log.i("hardcore", "signature does NOT match. Message is not trusted");
+        }
 
         long[] pattern= {0,500,0};
         NotificationCompat.Builder mBuilder =
@@ -116,9 +130,7 @@ public class GcmIntentService extends IntentService {
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 
-        if(!adressBook.isContact(messageMap.get(getString(R.string.message_sender)))){
-            adressBook.storeNewContact(messageMap.get(getString(R.string.message_sender)),serverConnection.requestPubKey(messageMap.get(getString(R.string.message_sender))));
-        }
+
         int senderId = adressBook.getContactId(messageMap.get(getString(R.string.message_sender)));
         int receiverId = adressBook.getUserId();
         Message messageObject = new Message(senderId, receiverId,  messageMap.get(getString(R.string.message_content)));

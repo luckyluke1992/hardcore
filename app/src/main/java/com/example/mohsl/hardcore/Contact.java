@@ -1,6 +1,7 @@
 package com.example.mohsl.hardcore;
 
 import java.security.Key;
+import java.security.PublicKey;
 
 /**
  * Created by mohsl on 11.03.2015.
@@ -9,9 +10,9 @@ public class Contact {
     private int id;
     private String name;
     private boolean unreadMessageAvailable;
-    private Key pubKey;
+    private PublicKey pubKey;
 
-    public Contact(int mId, String mName, boolean mUnreadmessageAvailable, Key mPubKey){
+    public Contact(int mId, String mName, boolean mUnreadmessageAvailable, PublicKey mPubKey){
          id = mId;
         pubKey=mPubKey;
         name = mName;
@@ -28,7 +29,7 @@ public class Contact {
     public void setUnreadMessageAvailable(boolean isAvailable){
         unreadMessageAvailable = isAvailable;
     }
-    public Key getPubKey(){
+    public PublicKey getPubKey(){
         return pubKey;
     }
 }

@@ -36,5 +36,8 @@
     <string name="server_base_url">http://luckyluke.selfhost.bz:1337/</string>
     <string name="file_name_for_saved_keys">KeyPair.txt</string>
     <string name="error_message_storing_of_keys_to_file_fail">File Access Issue, reinstall the Application</string>
+    <string name="append_message_text_untrusted">"  !!This message is not trusted!!"</string>
+    <string name="message_signature">signature</string>
+    <string name="message_receiver">receiver</string>
 
 </resources>

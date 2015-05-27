@@ -28,8 +28,12 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -45,9 +49,12 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class KeyHandler {
 
+    static {
+        Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
+    }
     private static KeyHandler instance;
-    private Key pubKey;
-    private Key privKey;
+    private PublicKey pubKey;
+    private PrivateKey privKey;
 
     public static KeyHandler getInstance() {
         if (instance == null) {
@@ -60,16 +67,16 @@ public class KeyHandler {
     }
 
     public boolean generateAndStoreKeys() {
-        SecureRandom random = Utils.createFixedRandom();
+        SecureRandom random = new SecureRandom();
         // create the RSA Key
         KeyPairGenerator generator = null;
         try {
-            generator = KeyPairGenerator.getInstance("RSA", "BC");
+            generator = KeyPairGenerator.getInstance("RSA", "SC");
             generator.initialize(1024, random);
 
             KeyPair pair = generator.generateKeyPair();
-            Key pubKey = pair.getPublic();
-            Key privKey = pair.getPrivate();
+            PublicKey pubKey = pair.getPublic();
+            PrivateKey privKey = pair.getPrivate();
             this.setPrivKey(privKey);
             this.setPubKey(pubKey);
             Log.i(MainActivity.getAppContext().getString(R.string.debug_tag), "Public key:" + pubKey.toString());
@@ -97,11 +104,15 @@ public class KeyHandler {
         return true;
     }
 
-    public Key getPubKey() {
+    public PublicKey getPubKey() {
         return pubKey;
     }
 
-    private void setPubKey(Key pubKey) {
+    public PrivateKey getPrivKey() {
+        return privKey;
+    }
+
+    private void setPubKey(PublicKey pubKey) {
         this.pubKey = pubKey;
     }
 
@@ -128,17 +139,17 @@ public class KeyHandler {
         return decodedBytes;
     }
 
-    public Key getKeyFromSerialization(String encodedKey) {
+    public PublicKey getKeyFromSerialization(String encodedKey) {
         Object obj = null;
         byte[] decodedBytes = Base64.decode(encodedKey);
         ByteArrayInputStream bi = new ByteArrayInputStream(decodedBytes);
         ObjectInputStream oi = null;
-        Key pubKey2 = null;
+        PublicKey pubKey2 = null;
 
             try {
                 //encodedBytes = Base64.encode(pubKey.getEncoded());
                 X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(decodedBytes);
-                KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+                KeyFactory keyFact = KeyFactory.getInstance("RSA", "SC");
                 pubKey2 = keyFact.generatePublic(x509KeySpec);
                 Log.i(String.valueOf(R.string.debug_tag), pubKey2.toString());
             } catch (InvalidKeySpecException e) {
@@ -151,7 +162,7 @@ public class KeyHandler {
         return pubKey2;
     }
 
-    private void setPrivKey(Key privKey) {
+    private void setPrivKey(PrivateKey privKey) {
         this.privKey = privKey;
     }
 
@@ -179,19 +190,19 @@ public class KeyHandler {
         //0--> encoded message
         //1-->keyblock
         byte[] keyBlock=null;
-        SecureRandom     random = Utils.createFixedRandom();
+        SecureRandom     random = new SecureRandom();
         byte[] cipherText=null;
         // create the symmetric key and iv
         try {
             Key sKey = Utils.createKeyForAES(256, random);
             IvParameterSpec sIvSpec = Utils.createCtrIvForAES(0, random);
             // symmetric key/iv wrapping step
-            Cipher           xCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "BC");
+            Cipher           xCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "SC");
             xCipher.init(Cipher.ENCRYPT_MODE, publicKey, random);
             keyBlock = xCipher.doFinal(packKeyAndIv(sKey, sIvSpec));
 
             // encryption step
-            Cipher          sCipher = Cipher.getInstance("AES/CTR/NoPadding", "BC");
+            Cipher          sCipher = Cipher.getInstance("AES/CTR/NoPadding", "SC");
             sCipher.init(Cipher.ENCRYPT_MODE, sKey, sIvSpec);
             cipherText = sCipher.doFinal(messageText.getBytes());
 
@@ -222,14 +233,14 @@ public class KeyHandler {
         Cipher xCipher = null;
         byte[] plainText = null;
         try {
-            xCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "BC");
-            Cipher          sCipher = Cipher.getInstance("AES/CTR/NoPadding", "BC");
+            xCipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA1AndMGF1Padding", "SC");
+            Cipher          sCipher = Cipher.getInstance("AES/CTR/NoPadding", "SC");
             // symmetric key/iv unwrapping step
             xCipher.init(Cipher.DECRYPT_MODE, privKey);
             Object[]keyIv = unpackKeyAndIV(xCipher.doFinal(keyBlock));
 
             // decryption step
-            sCipher.init(Cipher.DECRYPT_MODE, (Key)keyIv[0], (IvParameterSpec)keyIv[1]);
+            sCipher.init(Cipher.DECRYPT_MODE, (Key) keyIv[0], (IvParameterSpec) keyIv[1]);
 
             byte[] decodedBytes = Base64.decode(messageText);
             plainText = sCipher.doFinal(decodedBytes);
@@ -251,6 +262,56 @@ public class KeyHandler {
             e.printStackTrace();
         }
         return new String(plainText);
+    }
+
+
+    public String getSignatureAndEncode(String messageText, PrivateKey privateKey) {
+        Signature signature = null;
+        byte[] sigBytes = null, messageBytes = messageText.getBytes();
+        try {
+            signature = Signature.getInstance("RSA", "SC");
+            signature.initSign(privateKey, new SecureRandom());
+            signature.update(messageBytes);
+            sigBytes = signature.sign();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        return new String(Base64.encode(sigBytes));
+    }
+
+    /**
+     *
+     * @param strMessage
+     * @param strSignature
+     * @param publicKey
+     * @return {@code true} if the signature was verified, {@code false} otherwise.
+     */
+    public boolean verifySignature(String strMessage, String strSignature, PublicKey publicKey) {
+        boolean result = false;
+        Signature signatureObj = null;
+        byte[] messageBytes = strMessage.getBytes(),
+               signatureBytes = Base64.decode(strSignature);
+        try {
+            signatureObj = Signature.getInstance("RSA", "SC");
+            signatureObj.initVerify(publicKey);
+            signatureObj.update(messageBytes);
+            result = signatureObj.verify(signatureBytes);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     private static byte[] packKeyAndIv(

@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.Key;
+import java.security.PublicKey;
 
 
 public class ServerConnection {
@@ -81,13 +82,15 @@ public class ServerConnection {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(MainActivity.getAppContext().getString(R.string.server_base_url) + "messages/send");
         String[] encryption = keyHandler.getEncryptedMessageAndKeyBlock(message, adressBook.getContact(receiverName).getPubKey());
+        String strSignature = keyHandler.getSignatureAndEncode(message, keyHandler.getPrivKey());
         try {
             JSONObject jsonObj = new JSONObject();
             try {
-                jsonObj.put("content", encryption[0]); //encrypted message
-                jsonObj.put("receiver", receiverName);
-                jsonObj.put("sender", adressBook.getUserName());
-                jsonObj.put("keyblock", encryption[1]);
+                jsonObj.put(MainActivity.getAppContext().getString(R.string.message_content), encryption[0]); //encrypted message
+                jsonObj.put(MainActivity.getAppContext().getString(R.string.message_receiver), receiverName);
+                jsonObj.put(MainActivity.getAppContext().getString(R.string.message_sender), adressBook.getUserName());
+                jsonObj.put(MainActivity.getAppContext().getString(R.string.message_keyblock), encryption[1]);
+                jsonObj.put(MainActivity.getAppContext().getString(R.string.message_signature), strSignature);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -110,7 +113,7 @@ public class ServerConnection {
         return true;
     }
 
-    public Key requestPubKey(String name){
+    public PublicKey requestPubKey(String name){
 
         StringBuffer res = new StringBuffer();
         URL url = null;
@@ -141,7 +144,7 @@ public class ServerConnection {
             e.printStackTrace();
         }
 
-        Key key = null;
+        PublicKey key = null;
 
         JSONObject obj = null;
         try {
