@@ -69,7 +69,7 @@ public class ServerConnection {
                 in.close();
                 urlConnection.disconnect();
             } else {
-                Log.i(TAG, "Couldn´t connect to Server");
+                Log.i(TAG, "Could not connect to Server");
             }
         } catch (Exception e) {
             e.printStackTrace();
